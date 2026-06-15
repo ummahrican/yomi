@@ -30,6 +30,7 @@ export async function feedRoutes(app: FastifyInstance) {
       const sourceSlugs = csv(sources);
       const mutedTags = csv(req.query.mutedTags);
       const mutedSources = csv(req.query.mutedSources);
+      const boostTags = csv(req.query.boostTags);
 
       const organic = await queryOrganic({
         limit,
@@ -39,6 +40,7 @@ export async function feedRoutes(app: FastifyInstance) {
         sourceSlugs,
         mutedTags,
         mutedSources,
+        boostTags,
       });
 
       const nextCursor =

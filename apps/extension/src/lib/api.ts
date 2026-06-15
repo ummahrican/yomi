@@ -29,6 +29,7 @@ export interface FeedParams {
   sources?: string[];
   mutedTags?: string[];
   mutedSources?: string[];
+  boostTags?: string[];
 }
 
 export async function fetchFeed(params: FeedParams, signal?: AbortSignal): Promise<FeedResponse> {
@@ -40,6 +41,7 @@ export async function fetchFeed(params: FeedParams, signal?: AbortSignal): Promi
   if (params.sources?.length) qs.set("sources", params.sources.join(","));
   if (params.mutedTags?.length) qs.set("mutedTags", params.mutedTags.join(","));
   if (params.mutedSources?.length) qs.set("mutedSources", params.mutedSources.join(","));
+  if (params.boostTags?.length) qs.set("boostTags", params.boostTags.join(","));
 
   const res = await fetch(`${BASE}/api/feed?${qs.toString()}`, { signal });
   if (!res.ok) throw new Error(`feed request failed: ${res.status}`);

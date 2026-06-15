@@ -15,6 +15,7 @@ interface QueryOpts {
   sourceSlugs?: string[];
   mutedTags?: string[];
   mutedSources?: string[];
+  boostTags?: string[];
 }
 
 /**
@@ -87,6 +88,12 @@ export async function queryOrganic(opts: QueryOpts): Promise<OrganicRow[]> {
 
   const whereSql = sql.join(conditions, sql` AND `);
 
+  // Followed topics: articles whose tags overlap get a 2x ranking multiplier so
+  // they rise toward the top of "For You" without excluding anything else.
+  const boost = opts.boostTags?.length
+    ? sql`(CASE WHEN tags && ARRAY[${list(opts.boostTags)}]::text[] THEN 4.0 ELSE 1 END)`
+    : sql`1`;
+
   const result = await db.execute(sql`
     WITH scored AS (
       SELECT
@@ -101,7 +108,7 @@ export async function queryOrganic(opts: QueryOpts): Promise<OrganicRow[]> {
       WHERE ${whereSql}
     )
     SELECT * FROM scored
-    ORDER BY score * power(0.6, src_rank - 1) DESC, id DESC
+    ORDER BY score * power(0.6, src_rank - 1) * ${boost} DESC, id DESC
     LIMIT ${opts.limit} OFFSET ${opts.offset}
   `);
 

@@ -11,6 +11,7 @@ interface Props {
   sourceFilter?: string;
   density: Prefs["density"];
   disabledSources: string[];
+  boostTags: string[];
   mutedTags: string[];
   mutedSources: string[];
   hiddenIds: Set<number>;
@@ -38,6 +39,8 @@ export function FeedView(props: Props) {
       sources: props.sourceFilter ? [props.sourceFilter] : undefined,
       mutedTags: props.mutedTags,
       mutedSources: props.mutedSources,
+      // Boost followed topics only in the default "For You" feed.
+      boostTags: props.tag || props.q || props.sourceFilter ? undefined : props.boostTags,
     });
 
   // Flatten pages, drop disabled/hidden, and de-dupe ids across page overlaps.

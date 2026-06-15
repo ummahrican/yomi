@@ -63,6 +63,7 @@ export const FeedQuerySchema = z.object({
   sources: z.string().optional(), // csv of source slugs (allowlist)
   mutedTags: z.string().optional(), // csv of tags to exclude
   mutedSources: z.string().optional(), // csv of source slugs to exclude
+  boostTags: z.string().optional(), // csv of followed tags to rank higher
 });
 export type FeedQuery = z.infer<typeof FeedQuerySchema>;
 

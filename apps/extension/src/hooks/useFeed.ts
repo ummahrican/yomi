@@ -8,6 +8,7 @@ export interface FeedFilters {
   sources?: string[];
   mutedTags?: string[];
   mutedSources?: string[];
+  boostTags?: string[];
 }
 
 export function useFeed(filters: FeedFilters) {
@@ -24,6 +25,7 @@ export function useFeed(filters: FeedFilters) {
           sources: filters.sources,
           mutedTags: filters.mutedTags,
           mutedSources: filters.mutedSources,
+          boostTags: filters.boostTags,
         },
         signal,
       ),

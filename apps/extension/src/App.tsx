@@ -173,6 +173,7 @@ function Shell() {
           sourceFilter={activeSource?.slug}
           density={prefs.density}
           disabledSources={prefs.disabledSources}
+          boostTags={prefs.followedTags}
           mutedTags={muted.muted.tags}
           mutedSources={muted.muted.sources}
           hiddenIds={muted.hidden}

@@ -119,6 +119,9 @@ export function SettingsDrawer(props: Props) {
 
         {props.tags.length > 0 ? (
           <Section title="Followed topics">
+            <p className="mb-2 text-sm text-zinc-500 dark:text-zinc-400">
+              Followed topics rank higher in your feed and sit up front in the filter bar.
+            </p>
             <div className="flex flex-wrap gap-1.5">
               {props.tags.slice(0, 30).map((t) => {
                 const on = prefs.followedTags.includes(t.name);
