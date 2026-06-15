@@ -1,0 +1,58 @@
+# Compose file for deploying Yomi on Dokploy (Compose service type).
+#
+# NO Caddy here: Dokploy's built-in Traefik terminates TLS and routes traffic.
+# You attach the domain to the `api` service (port 3000) in Dokploy's UI
+# (Compose > Domains), and Dokploy injects the Traefik labels + Let's Encrypt.
+# Postgres has no published port — only the API reaches it on the internal net.
+#
+# Set the ${...} values in Dokploy's Environment tab. ADMIN_API_KEY is required:
+# the API refuses to boot in production with the default key.
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      ADMIN_API_KEY: ${ADMIN_API_KEY}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      GRAVITY: ${GRAVITY:-1.6}
+      SOURCE_APPROVE_VOTES: ${SOURCE_APPROVE_VOTES:-10}
+      INGEST_ENABLED: ${INGEST_ENABLED:-true}
+      INGEST_CONTACT_URL: ${INGEST_CONTACT_URL}
+    expose:
+      - "3000"
+    # Traefik (Dokploy) must share a network with the API to route to it.
+    networks:
+      - default
+      - dokploy-network
+
+volumes:
+  pgdata:
+
+networks:
+  # Provided by Dokploy; lets its Traefik reach the api service.
+  dokploy-network:
+    external: true

@@ -1,176 +1,144 @@
-# Yomi — the latest in tech on every new tab
+<div align="center">
+  <br>
+  <img alt="Yomi" src="apps/extension/public/icon/512.png" width="200px">
+  <h1>Yomi</h1>
+  <strong>The latest in tech on every new tab — open, private, yours. A self-hostable alternative to <a href="https://daily.dev">daily.dev</a>.</strong>
+</div>
+<br>
+<p align="center">
+  <img src="https://img.shields.io/github/actions/workflow/status/ummahrican/yomi/ci.yml?branch=main&label=CI&logo=github" alt="CI status">
+  <img src="https://img.shields.io/github/license/ummahrican/yomi" alt="License">
+  <img src="https://img.shields.io/github/languages/code-size/ummahrican/yomi" alt="GitHub code size in bytes">
+  <img src="https://img.shields.io/github/last-commit/ummahrican/yomi" alt="Last commit">
+</p>
 
-An open, community-friendly alternative to daily.dev. A browser extension overrides your
-new-tab page with a ranked feed of the latest tech articles, aggregated from hundreds of
-developer blogs plus Hacker News and DEV. No accounts, no tracking. Monetized — if you want —
-with clearly-labeled sponsored posts.
+Yomi is a browser new-tab extension that replaces every new tab with a ranked feed of the latest tech articles — aggregated from hundreds of developer blogs, the [Hacker News](https://news.ycombinator.com) API, and [DEV](https://dev.to). **No accounts, no tracking**: your bookmarks, history, and preferences stay on your device, and the server is stateless about you. It's a clean-room, open alternative to daily.dev (not affiliated) that you can self-host and share freely.
 
-- **Backend** (`apps/api`): Node + TypeScript + Fastify + Postgres. Pulls RSS/Atom feeds, the
-  Hacker News API, and the DEV API; dedupes and ranks them; serves a paginated feed and injects
-  sponsored posts.
-- **Extension** (`apps/extension`): WXT + React + TypeScript + Tailwind. One codebase builds for
-  Chromium (Chrome/Edge/Brave) and Firefox (Manifest V3 / V2). Bookmarks, upvotes, and settings
-  live on-device.
-- **Shared** (`packages/shared`): zod schemas shared by both — one source of truth for the API
-  contract.
+## ✨ Features
 
-## Why this exists
+- **One ranked feed, many sources** — RSS/Atom blogs, Hacker News, DEV, and curated YouTube channels; canonical-URL de-duplication; log-compressed gravity ranking with per-source diversity decay.
+- **Private by architecture** — bookmarks, upvotes, read-state, streaks, and "not interested" live on-device; muted tags/sources are sent as per-request filters, so the server keeps **no behavioral profile**.
+- **In-place reader** with live Hacker News comment threads.
+- **Anonymous, end-to-end-encrypted sync** — a 12-word recovery phrase derives an on-device AES-GCM key; the server only ever stores ciphertext it can't read. No account, no email.
+- **Community-curated sources** — submit and vote on RSS feeds; auto-approve at a majority threshold (admin override in the dashboard).
+- **Monetization, if you want it** — clearly-labeled "Promoted" cards (and privacy-respecting ad fill), never surveillance ad networks.
+- Dark mode by default, keyboard shortcuts, JSON backup export/import.
 
-daily.dev is a great product. This is a clean-room, open alternative you can self-host and share
-freely. It is not affiliated with daily.dev.
+## 🧩 Project structure
 
----
+A pnpm monorepo:
 
-## Quick start (local dev)
+| Package | Stack | Purpose |
+| --- | --- | --- |
+| `apps/api` | Node · TypeScript · Fastify · Postgres · Drizzle | Ingests + ranks articles, serves the feed, injects sponsored posts, runs the admin dashboard |
+| `apps/extension` | WXT · React · TypeScript · Tailwind | One codebase builds the MV3 (Chromium) + MV2 (Firefox) new-tab extension |
+| `packages/shared` | zod | Schemas shared by both — one source of truth for the API contract |
 
-Prereqs: Node ≥ 20, pnpm, Docker.
+## 📖 Prerequisites
 
-```bash
+In order to run the project you need `node>=20`, `pnpm`, and `docker` (for a local Postgres).
+
+Enable pnpm via corepack: `corepack enable`.
+
+## 🖥️ Local development
+
+To install the application:
+
+```shell
 pnpm install
 cp .env.example .env          # defaults work for local dev
+```
 
-# 1) Database
-pnpm db:up                    # start Postgres (docker compose)
-pnpm db:migrate               # create tables
-pnpm db:seed                  # insert the ~25 starter sources
+Start Postgres and set up the database:
 
-# 2) Fill the feed (the dev server also does this on a schedule)
-pnpm --filter @daily-alt/api ingest:once
+```shell
+pnpm db:up                    # start Postgres via docker compose
+pnpm db:migrate               # apply SQL migrations
+pnpm db:seed                  # insert the curated starter sources (idempotent)
+```
 
-# 3) Run everything
-pnpm dev                      # API on :3000 + extension dev (auto-opens a browser)
+Run everything (API on `:3000`, extension dev server on `:3001`):
+
+```shell
+pnpm dev
 # or individually:
-pnpm api
+pnpm api                      # API + background ingestion cron
 pnpm ext                      # Chromium
 pnpm ext:firefox              # Firefox
 ```
 
-`pnpm ext` opens a browser with the extension loaded — open a new tab to see the feed. The API
-runs a background ingestion cron (HN every 10 min, RSS every 15 min, DEV every 20 min).
+Then load the unpacked extension (`apps/extension/.output/chrome-mv3`) and open a new tab.
 
-> **Note on pnpm:** `pnpm-workspace.yaml` pins `@vitejs/plugin-react` to v4 via `overrides`
-> (WXT 0.19 uses Vite 6, but plugin-react 6 requires Vite 7), and lists `esbuild` + `spawn-sync`
-> under `onlyBuiltDependencies` so `pnpm install` approves their build scripts and exits 0.
-> If you ever see `ERR_PNPM_IGNORED_BUILDS`, run `pnpm approve-builds` — but do **not** leave a
-> half-filled `allowBuilds:` block in the workspace file; it suppresses the approval keys.
+> **pnpm note:** `pnpm-workspace.yaml` pins `@vitejs/plugin-react` to v4 via `overrides` (WXT 0.19 uses Vite 6, but plugin-react 6 needs Vite 7) and lists `esbuild` + `spawn-sync` under `onlyBuiltDependencies` so `pnpm install` exits 0. If you see `ERR_PNPM_IGNORED_BUILDS`, run `pnpm approve-builds` — but don't leave a half-filled `allowBuilds:` block in the workspace file.
 
----
+### 🧪 Test
 
-## How it works
+A formal test suite is not yet set up (planned: Vitest for the ranking, dedup, CRDT, and SSRF logic). Type safety is enforced across all packages — run:
 
-### Aggregation
-`apps/api/src/ingest` fetches each enabled source (`runner.ts`), normalizes items
-(`normalize.ts` — image/excerpt/tags extraction), and upserts them. Dedup is by a canonical-URL
-hash (`lib/canonicalUrl.ts`): the same article from RSS and Hacker News collapses to one card and
-merges popularity signals. Failing sources are tracked and auto-disabled after repeated errors.
-
-### Ranking
-A gravity score with **log-compressed popularity** so one viral HN thread doesn’t bury every blog:
-
-```
-P     = ln(1+hn/dev_score) + 1.5·ln(1+comments) + 3·upvotes
-score = (P+1)^0.8 / (ageHours+2)^GRAVITY        # GRAVITY tunable via env
+```shell
+pnpm -r typecheck
 ```
 
-A window function applies a **per-source decay** (`0.6^(rank-1)`) so the feed interleaves many
-sources instead of letting one dominate. See `apps/api/src/feed/query.ts`.
+### 📦 Docker builds
 
-### Sponsored posts (monetization)
-The feed assembler splices one promoted card at position 3, then every 8 cards
-(`feed/sponsored.ts`). Cards are weighted-random among active posts and rendered with a clear
-**“Promoted”** badge. Impressions/clicks are counted via `POST /api/events` using only an
-anonymous device id.
+The API ships a Dockerfile (build context must be the **repo root** so the workspace + shared package are available):
 
-Create one:
-
-```bash
-ADMIN_API_KEY=change-me node scripts/create-sponsored.mjs \
-  --advertiser "Acme" --title "Ship faster with Acme CI" \
-  --url "https://acme.com/?ref=yomi" --tags devtools,ci --weight 5
+```shell
+docker build -f apps/api/Dockerfile -t yomi-api .
 ```
 
-(or `POST /api/admin/sponsored` with header `x-admin-key: $ADMIN_API_KEY`).
+Then run it (it applies migrations + seed, then boots the server with the ingest cron):
 
----
+```shell
+docker run -d -p 3000:3000 \
+  -e DATABASE_URL="postgres://user:pass@host:5432/yomi" \
+  -e ADMIN_API_KEY="$(openssl rand -hex 32)" \
+  yomi-api
+```
 
-## API
+### 🎨 Code linting
+
+Type checking via `tsc` is the source of truth today (`pnpm -r typecheck`). An ESLint/Prettier config isn't committed yet — contributions welcome.
+
+### 🚀 Production deployment
+
+Deploy via [**Dokploy**](deploy/DOKPLOY.md) (recommended — Traefik handles TLS, managed Postgres handles backups) or any Docker host. Build store-ready extension packages with your API origin baked in (`host_permissions` auto-tightens to it):
+
+```shell
+VITE_API_BASE_URL=https://api.yourdomain pnpm --filter @daily-alt/extension zip:prod
+```
+
+The full prioritized checklist, a bare-VPS runbook, and store-submission requirements live in [`docs/PRODUCTION_READINESS.md`](docs/PRODUCTION_READINESS.md).
+
+### 💾 Database
+
+Postgres 16. The schema is managed by **hand-written SQL migrations** in `apps/api/src/db/migrations`, applied in order by `apps/api/src/db/migrate.ts` (`pnpm db:migrate`) and tracked in a `_migrations` table. Queries use [Drizzle](https://orm.drizzle.team). The curated starter sources are seeded from `apps/api/src/ingest/sources.seed.ts` (`pnpm db:seed`).
+
+### 📡 API
 
 | Method | Path | Notes |
 | --- | --- | --- |
 | GET | `/health` | liveness |
-| GET | `/api/feed?cursor&limit&tag&q&sources&mutedTags&mutedSources` | paginated feed (articles + sponsored) |
+| GET | `/api/feed` | paginated feed (articles + sponsored); supports `cursor`, `limit`, `tag`, `q`, `sources`, `mutedTags`, `mutedSources` |
 | GET | `/api/articles/:id` | single article |
 | GET | `/api/tags` | top tags by recent article count |
-| POST | `/api/events` | `{type:upvote\|click\|impression, targetType, targetId, deviceId}` |
-| GET | `/api/sources?status&deviceId` | list approved/pending community sources |
-| POST | `/api/sources` | submit a feed `{feedUrl, deviceId}` (validated) |
-| POST | `/api/sources/:id/vote` | `{deviceId}` — auto-approves at `SOURCE_APPROVE_VOTES` |
-| POST | `/api/sync/pull` | `{authToken}` → encrypted blob for that anonymous account |
-| POST | `/api/sync/push` | `{authToken, payload, baseVersion}` → store ciphertext (optimistic concurrency) |
-| GET/POST/PATCH/DELETE | `/api/admin/sponsored` | requires `x-admin-key` |
-| GET/PATCH/DELETE | `/api/admin/sources` | moderate community sources (requires `x-admin-key`) |
-| GET | `/admin` | password-protected admin dashboard (campaigns + sources) |
+| POST | `/api/events` | anonymous `upvote` / `click` / `impression` |
+| GET · POST | `/api/sources` · `/api/sources/:id/vote` | list / submit / vote on community sources |
+| POST | `/api/sync/pull` · `/api/sync/push` | encrypted blob sync (optimistic concurrency) |
+| * | `/api/admin/*` · `/admin` | sponsored campaigns + source moderation (requires `x-admin-key`) |
 
-## Features beyond the core feed
+## 🔒 Privacy
 
-- **Reading streaks** — tracked in browser **sync** storage (cross-device, survives reinstall); shown as a 🔥 badge.
-- **Not interested** — each card's ⋯ menu can hide an article or mute a source/tag. Muted tags/sources are sent as per-request feed filters, so the server **stores no profile**. Manage/unmute them in Settings.
-- **Community-voted sources** — anyone can suggest an RSS feed in Settings; it's validated server-side, then auto-approves once it reaches `SOURCE_APPROVE_VOTES` votes (or you approve it in the dashboard).
-- **Backup** — Settings → Export/Import a JSON file for an offline copy you control.
-- **Anonymous cross-device sync** — Settings → Enable sync mints a **12-word recovery phrase** (no account). From it the client derives an AES-GCM key (encrypts everything on-device) and an auth token (the server keys storage by its hash). Data is merged with a small **CRDT** (LWW bookmarks, grow-only upvotes/reads, LWW settings with max-streak), so multiple devices reconcile without loss. The server stores only **ciphertext it can't read**. Restore on another device by entering the phrase.
-- **Video cards** — curated tech YouTube channels are ingested via per-channel RSS and shown as video cards (play overlay, thumbnail, "Watch"). Add more in `sources.seed.ts` with `contentType: "video"`.
-- **Read-time** — cards show an estimated "Xm read" (from content length; dev.to provides exact minutes).
-- **Keyboard shortcuts** — `/` or ⌘K focus search; `j`/`k` (or arrows) move the selection; `o`/Enter open; `b` bookmark; `u` upvote; `Esc` blur/clear. Plus copy-link on each card and a scroll-to-top button.
-- **Admin dashboard** (`/admin`) — paste your `ADMIN_API_KEY` to create/pause/delete sponsored campaigns (with impressions/clicks/CTR) and approve/reject community sources.
+Personal and behavioral data (bookmarks, upvotes, read-state, streaks, muted lists) lives **on-device**. The server ranks globally and accepts per-request filter params; the only per-device rows it stores are anonymous vote-dedup entries and aggregate ad counters. Yomi shows only titles, short excerpts, attribution, and links — never full article bodies. See [`PRIVACY.md`](PRIVACY.md).
 
-### Data & privacy model
-Personal/behavioral data (bookmarks, upvotes, read state, streak, muted lists) lives **on-device**. The server is stateless about *you*: it ranks globally and accepts per-request filter params; the only per-device rows it stores are anonymous vote-dedup entries and aggregate ad counters. See [`PRIVACY.md`](./PRIVACY.md).
+## 🤝 Contributing
 
----
+Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md). Open an issue to discuss a change, or send a PR; good first issues are labeled `good first issue`. For security issues, follow [`SECURITY.md`](SECURITY.md) instead of opening a public issue.
 
-## Deploy
+## 🍕 Community
 
-### API + Postgres
-Any host that runs a Node service + managed Postgres works (Railway, Render, Fly.io).
+Got questions or ideas? [Open an issue](https://github.com/ummahrican/yomi/issues) or start a [discussion](https://github.com/ummahrican/yomi/discussions).
 
-1. Provision Postgres and set `DATABASE_URL`.
-2. Set env: `ADMIN_API_KEY` (change it!), `CORS_ORIGIN=*`, `GRAVITY` (optional), `INGEST_CONTACT_URL`.
-3. Deploy the API. A Dockerfile is provided (build context = repo root):
-   ```bash
-   docker build -f apps/api/Dockerfile -t yomi-api .
-   ```
-   Its start command runs migrations + seed, then boots the server with the ingest cron.
+## ⚖️ LICENSE
 
-### Extension
-Point the extension at your deployed API and tighten its host permission:
-
-1. In `apps/extension/wxt.config.ts`, set `host_permissions` to your API origin
-   (e.g. `https://api.yourdomain.com/*`).
-2. Build with the API URL baked in:
-   ```bash
-   VITE_API_BASE_URL=https://api.yourdomain.com pnpm --filter @daily-alt/extension zip
-   VITE_API_BASE_URL=https://api.yourdomain.com pnpm --filter @daily-alt/extension zip:firefox
-   ```
-3. Submit:
-   - **Chrome Web Store:** upload `.output/*-chrome.zip` (dev account, one-time $5 fee).
-   - **Firefox AMO:** upload the Firefox zip + the generated `sources.zip`; include the build
-     command above for reviewers.
-   - Edge/Brave accept the Chrome package.
-
-Declare the promoted-content/monetization and link [`PRIVACY.md`](./PRIVACY.md) in your listings.
-
----
-
-## Adding / changing sources
-
-Edit `apps/api/src/ingest/sources.seed.ts` and re-run `pnpm db:seed` (idempotent). Each source is
-`{ slug, name, kind: 'rss'|'hn'|'devto', feedUrl? }`. Health (`last_status`, `consecutive_failures`)
-is visible in the `sources` table.
-
-## Content & licensing
-Yomi stores and shows only **titles, short excerpts, source attribution, and links** — it never
-republishes full article bodies. Every card links out to the original publisher. This mirrors the
-fair-use posture of Hacker News and similar aggregators. Drop any source that objects.
-
-## License
-MIT.
+MIT © [Yomi](LICENSE)

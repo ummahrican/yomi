@@ -5,6 +5,8 @@ dist/
 *.log
 .env
 .env.local
+.env.production
+backups/
 .DS_Store
 coverage/
 *.tsbuildinfo

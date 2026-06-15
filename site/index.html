@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Yomi — Tech news on every new tab, without the tracking</title>
+<meta name="description" content="An open, privacy-first feed of the latest dev articles on every new tab. No accounts, no tracking, open source. A daily.dev alternative you can self-host." />
+<!-- No third-party trackers, no cookies. (Optional self-hosted, cookieless Umami
+     for THIS marketing site only is wired at the bottom of the file — never the extension.) -->
+<meta property="og:title" content="Yomi — Tech news on every new tab, without the tracking" />
+<meta property="og:description" content="An open, privacy-first daily.dev alternative. No accounts, no tracking, open source, self-hostable." />
+<meta property="og:type" content="website" />
+<!-- TODO: add og:image (1200x630) once the share graphic exists -->
+<style>
+  :root{--bg:#0b0d12;--card:#141821;--fg:#e6e9ef;--muted:#9aa3b2;--brand:#10b981;--brand2:#34d399;--ok:#34d399;--no:#5b6376;--line:#222838}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  a{color:var(--brand2);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+  header{display:flex;align-items:center;gap:12px;padding:24px 0}
+  header .name{font-weight:700;font-size:20px}
+  nav{margin-left:auto;display:flex;gap:22px;font-size:15px;align-items:center}
+  .logo{width:40px;height:40px;flex:0 0 auto}
+  .btn{display:inline-block;padding:12px 22px;border-radius:10px;font-weight:600;border:1px solid var(--line)}
+  .btn.sm{padding:8px 14px;font-size:14px}
+  .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn.primary:hover{background:var(--brand2);text-decoration:none}
+  .btn.ghost:hover{border-color:var(--brand2);text-decoration:none}
+  .hero{text-align:center;padding:44px 0 8px}
+  .hero h1{font-size:clamp(30px,5.2vw,50px);line-height:1.12;margin:0 0 16px;letter-spacing:-.02em}
+  .hero p.sub{font-size:19px;color:var(--muted);max-width:640px;margin:0 auto 26px}
+  .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .shot{margin:40px auto 0;max-width:820px;border:1px solid var(--line);border-radius:16px;background:var(--card);padding:14px}
+  .shot .ph{border-radius:10px;background:linear-gradient(135deg,#1a1f2b,#11151d);aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;text-align:center;padding:20px}
+  .stats{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;padding:34px 0 8px;color:var(--muted);font-size:15px}
+  .stats b{color:var(--fg)}
+  .stats .dot{opacity:.4}
+  section.block{padding:56px 0;border-top:1px solid var(--line)}
+  section.block:first-of-type{border-top:0}
+  h2{font-size:clamp(24px,3.6vw,32px);letter-spacing:-.01em;margin:0 0 8px;text-align:center}
+  .lede{color:var(--muted);text-align:center;max-width:640px;margin:0 auto 36px}
+  .feature{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center;margin:28px 0}
+  .feature.rev .txt{order:2}
+  .feature .fph{border:1px solid var(--line);border-radius:12px;background:linear-gradient(135deg,#1a1f2b,#11151d);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;text-align:center;padding:16px}
+  .feature h3{margin:0 0 8px;font-size:20px}
+  .feature p{margin:0;color:var(--muted)}
+  table.cmp{width:100%;border-collapse:collapse;margin-top:8px;font-size:15px}
+  table.cmp th,table.cmp td{padding:14px 12px;border-bottom:1px solid var(--line);text-align:left}
+  table.cmp thead th{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  table.cmp th.col{text-align:center;width:22%}
+  table.cmp td.c{text-align:center}
+  table.cmp .y{color:var(--ok);font-weight:700}
+  table.cmp .n{color:var(--no)}
+  .cmp-wrap{overflow-x:auto}
+  .pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+  .pillar{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .pillar h3{margin:0 0 8px;font-size:18px}
+  .pillar p{margin:0;color:var(--muted);font-size:15px}
+  .faq{max-width:760px;margin:0 auto}
+  details{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:4px 18px;margin:12px 0}
+  summary{cursor:pointer;font-weight:600;padding:14px 0;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";float:right;color:var(--muted)}
+  details[open] summary::after{content:"–"}
+  details p{margin:0 0 16px;color:var(--muted)}
+  .final{text-align:center;padding:64px 0}
+  footer{border-top:1px solid var(--line);padding:28px 0 56px;color:var(--muted);font-size:14px;display:flex;gap:20px;flex-wrap:wrap}
+  @media(max-width:680px){.feature,.feature.rev .txt{grid-template-columns:1fr;order:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg class="logo" viewBox="0 0 128 128" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <rect width="128" height="128" rx="28" fill="#10b981"/>
+      <g fill="#fff">
+        <circle cx="30.7" cy="38.4" r="9.6"/><rect x="43.5" y="28.8" width="56.5" height="19.2" rx="9.6"/>
+        <circle cx="30.7" cy="64" r="9.6"/><rect x="43.5" y="54.4" width="56.5" height="19.2" rx="9.6"/>
+        <circle cx="30.7" cy="89.6" r="9.6"/><rect x="43.5" y="80" width="33.5" height="19.2" rx="9.6"/>
+      </g>
+    </svg>
+    <span class="name">Yomi</span>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#compare">vs daily.dev</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/ummahrican/yomi">GitHub</a>
+      <a class="btn primary sm" href="#get">Add to browser</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1>Every new tab, the best of tech —<br>without being tracked for it.</h1>
+    <p class="sub">Yomi turns each new tab into a calm, fast feed of great developer writing — from hundreds of blogs, Hacker News, and DEV. No account. No tracking. Open source.</p>
+    <div class="cta" id="get">
+      <!-- Replace # with store URLs once published -->
+      <a class="btn primary" href="#">Add to Chrome</a>
+      <a class="btn ghost" href="#">Add to Firefox</a>
+      <a class="btn ghost" href="https://github.com/ummahrican/yomi">★ Star on GitHub</a>
+    </div>
+    <div class="shot">
+      <!-- HIGHEST-PRIORITY ASSET: replace with a ~12s muted autoplay screen
+           recording (mp4/webm) or GIF of the new-tab feed. See TODO.md. -->
+      <div class="ph">▶ Product demo — screen recording of the new-tab feed goes here<br><small>(see TODO.md → Assets)</small></div>
+    </div>
+    <div class="stats">
+      <span><b>100s</b> of curated sources</span><span class="dot">·</span>
+      <span><b>MIT</b> open source</span><span class="dot">·</span>
+      <span><b>0</b> trackers</span><span class="dot">·</span>
+      <span><b>Chrome</b> + <b>Firefox</b></span>
+      <!-- Add "★ N on GitHub" and "N installs" here once you have real numbers -->
+    </div>
+  </section>
+
+  <section class="block" id="features">
+    <h2>Built for reading, not for surveillance</h2>
+    <p class="lede">All the daily-feed habit, none of the profile-building.</p>
+
+    <div class="feature">
+      <div class="txt">
+        <h3>One ranked feed, many sources</h3>
+        <p>Articles from hundreds of dev blogs, Hacker News, DEV, and curated YouTube channels — de-duplicated and ranked so the best, freshest writing rises. Filter by tag, search, or source.</p>
+      </div>
+      <div class="fph">[ screenshot: the new-tab feed, dark mode ]</div>
+    </div>
+
+    <div class="feature rev">
+      <div class="txt">
+        <h3>Read in place, with the conversation</h3>
+        <p>Open an article in a clean reader without leaving your tab — and for Hacker News stories, read the live comment thread right alongside it.</p>
+      </div>
+      <div class="fph">[ screenshot: reader modal + HN comments ]</div>
+    </div>
+
+    <div class="feature">
+      <div class="txt">
+        <h3>Your data stays yours</h3>
+        <p>Bookmarks, reading streaks, read-state, and "not interested" all live on your device. The server can't tie a request to you — there's no account and no behavioral profile. Verify it: it's open source.</p>
+      </div>
+      <div class="fph">[ screenshot: settings → privacy / clear local data ]</div>
+    </div>
+
+    <div class="feature rev">
+      <div class="txt">
+        <h3>Sync without an account — end-to-end encrypted</h3>
+        <p>Want your bookmarks on your laptop and desktop? Turn on sync and get a 12-word recovery phrase. Your data is encrypted on-device before it ever leaves; the server only stores ciphertext it can't read. No email, no login, ever.</p>
+      </div>
+      <div class="fph">[ screenshot: 12-word recovery phrase screen ]</div>
+    </div>
+  </section>
+
+  <section class="block" id="compare">
+    <h2>Yomi vs daily.dev</h2>
+    <p class="lede">Same new-tab habit. A fundamentally different deal for your data.</p>
+    <div class="cmp-wrap">
+      <table class="cmp">
+        <thead>
+          <tr><th>&nbsp;</th><th class="col">Yomi</th><th class="col">daily.dev</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Use it without an account</td><td class="c y">Yes</td><td class="c n">Sign-up required</td></tr>
+          <tr><td>Behavioral tracking / profile</td><td class="c y">None — on-device</td><td class="c n">Feed personalized from tracked activity</td></tr>
+          <tr><td>Self-hostable</td><td class="c y">Yes</td><td class="c n">No</td></tr>
+          <tr><td>Open source</td><td class="c y">Yes (MIT)</td><td class="c n">Partial</td></tr>
+          <tr><td>Cross-device sync</td><td class="c y">End-to-end encrypted</td><td class="c">Account-based</td></tr>
+          <tr><td>Monetization</td><td class="c y">Labeled sponsors + privacy-respecting ads</td><td class="c">Ad network + Plus</td></tr>
+          <tr><td>Price</td><td class="c y">Free</td><td class="c">Free + paid Plus</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="lede" style="margin-top:24px">Switching from daily.dev for privacy reasons? Yomi is the clean-room, open alternative. <a href="https://github.com/ummahrican/yomi">Read the code →</a></p>
+  </section>
+
+  <section class="block">
+    <h2>Why people choose Yomi</h2>
+    <div class="pillars" style="margin-top:30px">
+      <div class="pillar"><h3>Private by architecture</h3><p>No account, no tracking pixels, no profile. Personal data stays on-device; the server is stateless about you — and it's verifiable, because it's open.</p></div>
+      <div class="pillar"><h3>Open &amp; self-hostable</h3><p>MIT-licensed. Run it yourself, audit the code, submit and vote on sources. Your feed, your rules.</p></div>
+      <div class="pillar"><h3>Values-aligned by default</h3><p>Curated sources include digital-rights and tech-justice voices alongside the best dev blogs. A feed built by a community that cares where its attention goes.</p></div>
+    </div>
+  </section>
+
+  <section class="block" id="faq">
+    <h2>Questions</h2>
+    <div class="faq">
+      <details><summary>Is it really free?</summary><p>Yes. Yomi is free and open source (MIT). It's funded by clearly-labeled sponsored posts and privacy-respecting ads — never by selling or tracking you.</p></details>
+      <details><summary>Do you track me?</summary><p>No. There's no account and no behavioral profile. Your bookmarks, history, and preferences stay in your browser. The server only sees anonymous feed requests it can't tie to a person. See the <a href="privacy.html">privacy policy</a>.</p></details>
+      <details><summary>Can I self-host it?</summary><p>Yes — the API, extension, and database are all open source. Clone the repo and run your own instance. <a href="https://github.com/ummahrican/yomi">Get started on GitHub →</a></p></details>
+      <details><summary>How does sync work without an account?</summary><p>You get a 12-word recovery phrase that derives an encryption key on your device. Your data is encrypted locally before upload; the server stores only ciphertext addressed by an opaque hash. We never receive your phrase or key, so we can't read your data.</p></details>
+      <details><summary>Which browsers are supported?</summary><p>Chrome (and Chromium browsers) and Firefox. The same codebase builds both.</p></details>
+      <details><summary>How are you funded, exactly?</summary><p>Labeled "Promoted" cards from aligned sponsors, plus privacy-respecting ad fill (EthicalAds) — no surveillance ad networks. Optional donations and a future "Plus" tier help cover hosting.</p></details>
+    </div>
+  </section>
+
+  <section class="final">
+    <h2>Make your new tab worth opening.</h2>
+    <p class="lede">Free, open, and private. Add Yomi in a couple of clicks.</p>
+    <div class="cta">
+      <a class="btn primary" href="#">Add to Chrome</a>
+      <a class="btn ghost" href="#">Add to Firefox</a>
+    </div>
+  </section>
+
+  <footer>
+    <span>© 2026 Yomi · MIT licensed</span>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="https://github.com/ummahrican/yomi">Source code</a>
+    <a href="https://github.com/ummahrican/yomi/issues">Report an issue</a>
+  </footer>
+</div>
+
+<!-- Optional, privacy-respecting web analytics for THIS marketing site ONLY
+     (never the extension). Self-host Umami on your own subdomain so it stays
+     first-party and cookieless — no consent banner needed, no personal data.
+     Uncomment and fill in once your instance is live:
+<script defer src="https://analytics.yourdomain/script.js" data-website-id="YOUR-UMAMI-WEBSITE-ID"></script>
+-->
+</body>
+</html>

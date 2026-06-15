@@ -1,5 +1,6 @@
 import Parser from "rss-parser";
 import { USER_AGENT } from "../lib/http";
+import { safeFetchText } from "../lib/ssrf";
 import {
   clampDate,
   estimateReadingMinutes,
@@ -30,9 +31,20 @@ type CustomItem = {
   "media:thumbnail"?: { $?: { url?: string } } | Array<{ $?: { url?: string } }>;
 };
 
+const FEED_HEADERS = {
+  "User-Agent": USER_AGENT,
+  Accept: "application/rss+xml, application/xml, text/xml",
+};
+
+// We fetch feed bodies ourselves via safeFetchText (SSRF-guarded, manual
+// redirects) and hand the XML to parseString — so the parser never makes its
+// own network request and never follows a redirect unchecked.
+async function fetchAndParse(feedUrl: string) {
+  const xml = await safeFetchText(feedUrl, { headers: FEED_HEADERS });
+  return parser.parseString(xml);
+}
+
 const parser: Parser<unknown, CustomItem> = new Parser({
-  timeout: 10_000,
-  headers: { "User-Agent": USER_AGENT, Accept: "application/rss+xml, application/xml, text/xml" },
   customFields: {
     item: [
       ["dc:creator", "dc:creator"],
@@ -66,7 +78,7 @@ function pickImage(item: Parser.Item & CustomItem): string | null {
 export async function fetchFeedMeta(
   feedUrl: string,
 ): Promise<{ title?: string; link?: string; itemCount: number }> {
-  const feed = await parser.parseURL(feedUrl);
+  const feed = await fetchAndParse(feedUrl);
   return { title: feed.title, link: feed.link, itemCount: (feed.items ?? []).length };
 }
 
@@ -79,7 +91,7 @@ export async function fetchRssFeed(
   feedUrl: string,
   opts: { video?: boolean } = {},
 ): Promise<NormalizedItem[]> {
-  const feed = await parser.parseURL(feedUrl);
+  const feed = await fetchAndParse(feedUrl);
   const now = new Date();
 
   return (feed.items ?? [])

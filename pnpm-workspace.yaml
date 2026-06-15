@@ -8,7 +8,12 @@ packages:
 overrides:
   "@vitejs/plugin-react": "^4.4.1"
 
-# Approve dependency build scripts so `pnpm install` doesn't exit non-zero.
-onlyBuiltDependencies:
-  - esbuild
-  - spawn-sync
+# pnpm records dependency build-script approval here. We explicitly do NOT run
+# these: esbuild ships prebuilt binaries via its platform-specific optional deps
+# (its postinstall isn't needed), and spawn-sync is a legacy shim unused on
+# Node >=20. Without an explicit decision a clean `pnpm install` fails with
+# ERR_PNPM_IGNORED_BUILDS (this is what broke CI). These MUST be real booleans —
+# never leave pnpm's "set this to true or false" stub here.
+allowBuilds:
+  esbuild: false
+  spawn-sync: false

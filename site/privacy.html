@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Privacy Policy — Yomi</title>
+<meta name="description" content="Yomi's privacy policy: no accounts, no personal data, on-device storage, optional end-to-end-encrypted sync." />
+<style>
+  :root{--bg:#0b0d12;--card:#141821;--fg:#e6e9ef;--muted:#9aa3b2;--brand:#10b981;--brand2:#34d399;--line:#222838}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  a{color:var(--brand2)} a:hover{text-decoration:underline}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px}
+  header{display:flex;align-items:center;gap:12px;padding:28px 0;border-bottom:1px solid var(--line)}
+  .name{font-weight:700}
+  nav{margin-left:auto;display:flex;gap:20px;font-size:15px}
+  h1{font-size:32px;margin:36px 0 6px;letter-spacing:-.02em}
+  .updated{color:var(--muted);margin:0 0 24px}
+  .lead{font-size:18px;color:var(--fg)}
+  ul{padding-left:22px}
+  li{margin:14px 0}
+  li strong{color:#fff}
+  .logo{width:36px;height:36px}
+  footer{border-top:1px solid var(--line);margin-top:40px;padding:24px 0 56px;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg class="logo" viewBox="0 0 128 128" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+      <rect width="128" height="128" rx="28" fill="#10b981"/>
+      <g fill="#fff">
+        <circle cx="30.7" cy="38.4" r="9.6"/><rect x="43.5" y="28.8" width="56.5" height="19.2" rx="9.6"/>
+        <circle cx="30.7" cy="64" r="9.6"/><rect x="43.5" y="54.4" width="56.5" height="19.2" rx="9.6"/>
+        <circle cx="30.7" cy="89.6" r="9.6"/><rect x="43.5" y="80" width="33.5" height="19.2" rx="9.6"/>
+      </g>
+    </svg>
+    <span class="name">Yomi</span>
+    <nav><a href="index.html">Home</a><a href="https://github.com/ummahrican/yomi">GitHub</a></nav>
+  </header>
+
+  <h1>Privacy Policy</h1>
+  <p class="updated">Last updated: 14 June 2026</p>
+  <p class="lead">Yomi is built to respect your privacy. In plain terms:</p>
+
+  <ul>
+    <li><strong>No accounts.</strong> There is no sign-up and no login.</li>
+    <li><strong>No personal data.</strong> We do not collect your name, email, IP address, or browsing history.</li>
+    <li><strong>On-device storage.</strong> Your bookmarks, upvotes, read history, and preferences are stored locally in your browser. They never leave your device except as described below.</li>
+    <li><strong>Anonymous device id.</strong> The extension generates a random identifier (a UUID) stored only in your browser. It contains no personal information and is used solely to (a) make sure an upvote counts once per device and (b) count ad impressions/clicks without tracking people. You can erase it any time with <strong>Settings → Clear local data</strong>.</li>
+    <li><strong>What the server sees.</strong> When the extension loads your feed it requests articles from our API. Standard, short-lived web server logs may record the request. We do not build profiles and we do not use cookies or third-party trackers.</li>
+    <li><strong>Sponsored posts.</strong> Promoted cards are clearly labeled "Promoted". We count aggregate impressions and clicks (tied only to the anonymous device id) to report performance to advertisers. No personal data is shared with advertisers. When you click a promoted card you are taken to the advertiser's own site, which has its own privacy policy.</li>
+    <li><strong>Articles link out.</strong> Yomi shows titles, short excerpts, and links. Clicking an article opens the original publisher's website.</li>
+    <li><strong>Optional sync is end-to-end encrypted.</strong> If you turn on cross-device sync, you get a 12-word recovery phrase — there is still no account and no email. Your data is encrypted on your device before upload using a key derived from that phrase; the server stores only ciphertext it cannot read, addressed by an opaque hash. We cannot see your bookmarks, and we never receive your phrase or your encryption key. Lose the phrase and the encrypted copy can't be recovered (your local data and any exported backup remain).</li>
+  </ul>
+
+  <p>Questions? <a href="https://github.com/ummahrican/yomi/issues">Open an issue</a> on the project repository.</p>
+
+  <footer>© 2026 Yomi · MIT licensed · <a href="index.html">Home</a></footer>
+</div>
+</body>
+</html>

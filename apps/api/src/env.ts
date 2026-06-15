@@ -10,11 +10,14 @@ const here = dirname(fileURLToPath(import.meta.url)); // apps/api/src
 config({ path: join(here, "..", "..", "..", ".env") }); // -> repo root .env
 config(); // also pick up a local apps/api/.env if one exists
 
+const DEFAULT_ADMIN_KEY = "change-me";
+
 const EnvSchema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   DATABASE_URL: z.string().min(1),
   PORT: z.coerce.number().default(3000),
   HOST: z.string().default("0.0.0.0"),
-  ADMIN_API_KEY: z.string().min(1).default("change-me"),
+  ADMIN_API_KEY: z.string().min(1).default(DEFAULT_ADMIN_KEY),
   INGEST_ENABLED: z
     .enum(["true", "false"])
     .default("true")
@@ -26,8 +29,18 @@ const EnvSchema = z.object({
   CORS_ORIGIN: z.string().default("*"),
   INGEST_CONTACT_URL: z
     .string()
-    .default("https://github.com/yourname/daily-dev-alt"),
+    .default("https://github.com/ummahrican/yomi"),
 });
 
 export const env = EnvSchema.parse(process.env);
 export type Env = typeof env;
+
+// Fail-fast in production rather than booting with a publicly-known admin key.
+// The admin dashboard (campaigns + source moderation) is gated solely by this
+// key, so a forgotten override would expose moderation to anyone.
+if (env.NODE_ENV === "production" && env.ADMIN_API_KEY === DEFAULT_ADMIN_KEY) {
+  throw new Error(
+    "Refusing to start: ADMIN_API_KEY is still the default 'change-me'. " +
+      "Set a strong, unique ADMIN_API_KEY (e.g. `openssl rand -hex 32`).",
+  );
+}
