@@ -1,0 +1,25 @@
+{
+  "name": "daily-dev-alt",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An open, community-friendly alternative to daily.dev: a tech-article feed on every new tab.",
+  "license": "MIT",
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "concurrently -n api,ext -c blue,magenta \"pnpm --filter @daily-alt/api dev\" \"pnpm --filter @daily-alt/extension dev\"",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "db:up": "docker compose up -d db",
+    "db:migrate": "pnpm --filter @daily-alt/api db:migrate",
+    "db:seed": "pnpm --filter @daily-alt/api db:seed",
+    "api": "pnpm --filter @daily-alt/api dev",
+    "ext": "pnpm --filter @daily-alt/extension dev",
+    "ext:firefox": "pnpm --filter @daily-alt/extension dev:firefox"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

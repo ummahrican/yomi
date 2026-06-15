@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.output/
+.wxt/
+*.log
+.env
+.env.local
+.DS_Store
+coverage/
+*.tsbuildinfo
+.turbo/
+stats.html
+web-ext-artifacts/

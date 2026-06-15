@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yomi Admin</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: ui-sans-serif, system-ui, sans-serif; background: #0b0b0f; color: #e7e7ea; }
+      header { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid #26262e; position: sticky; top: 0; background: #0b0b0fcc; backdrop-filter: blur(6px); }
+      header .brand { font-weight: 700; }
+      header .brand span { color: #10b981; }
+      main { max-width: 1000px; margin: 0 auto; padding: 20px; }
+      .tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+      .tabs button { background: #18181f; color: #b7b7be; border: 1px solid #26262e; border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+      .tabs button.active { background: #10b981; color: #04130d; border-color: #10b981; }
+      input, textarea, button { font: inherit; }
+      input, textarea { width: 100%; background: #131319; border: 1px solid #2a2a33; color: #e7e7ea; border-radius: 8px; padding: 8px 10px; }
+      label { display: block; font-size: 12px; color: #9a9aa3; margin: 8px 0 4px; }
+      .btn { background: #10b981; color: #04130d; border: none; border-radius: 8px; padding: 8px 14px; font-weight: 600; cursor: pointer; }
+      .btn.ghost { background: #18181f; color: #e7e7ea; border: 1px solid #2a2a33; }
+      .btn.danger { background: #3a1620; color: #fca5a5; border: 1px solid #7f1d1d; }
+      .btn.small { padding: 5px 9px; font-size: 13px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+      th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #1f1f27; font-size: 14px; vertical-align: top; }
+      th { color: #8a8a93; font-weight: 600; font-size: 12px; text-transform: uppercase; }
+      .muted { color: #8a8a93; font-size: 12px; }
+      .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+      .pill.approved { background: #064e3b; color: #6ee7b7; }
+      .pill.pending { background: #422006; color: #fcd34d; }
+      .pill.rejected { background: #3a1620; color: #fca5a5; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .card { background: #121218; border: 1px solid #23232b; border-radius: 12px; padding: 16px; margin-bottom: 18px; }
+      .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+      #gate { max-width: 380px; margin: 80px auto; }
+      .hidden { display: none; }
+      h2 { font-size: 16px; margin: 0 0 10px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand"><span>●</span> Yomi Admin</div>
+      <div style="margin-left:auto" class="muted" id="status"></div>
+    </header>
+
+    <main>
+      <div id="gate" class="card">
+        <h2>Enter admin key</h2>
+        <p class="muted">Your <code>ADMIN_API_KEY</code>. Stored only in this tab's session.</p>
+        <input id="key" type="password" placeholder="admin key" />
+        <div style="margin-top:12px"><button class="btn" onclick="connect()">Connect</button></div>
+        <p id="gateErr" class="muted" style="color:#fca5a5"></p>
+      </div>
+
+      <div id="app" class="hidden">
+        <div class="tabs">
+          <button id="tab-campaigns" class="active" onclick="showTab('campaigns')">Campaigns</button>
+          <button id="tab-sources" onclick="showTab('sources')">Sources</button>
+        </div>
+
+        <section id="view-campaigns">
+          <div class="card">
+            <h2>New campaign</h2>
+            <div class="grid">
+              <div><label>Advertiser *</label><input id="c-advertiser" /></div>
+              <div><label>Display source</label><input id="c-source" placeholder="defaults to advertiser" /></div>
+            </div>
+            <label>Title *</label><input id="c-title" />
+            <label>Excerpt</label><textarea id="c-excerpt" rows="2"></textarea>
+            <div class="grid">
+              <div><label>Target URL *</label><input id="c-url" placeholder="https://…" /></div>
+              <div><label>Image URL</label><input id="c-image" placeholder="https://…" /></div>
+            </div>
+            <div class="grid">
+              <div><label>Tags (comma sep)</label><input id="c-tags" placeholder="devtools, ci" /></div>
+              <div><label>Weight</label><input id="c-weight" type="number" value="1" min="1" /></div>
+            </div>
+            <div class="grid">
+              <div><label>Starts at</label><input id="c-starts" type="datetime-local" /></div>
+              <div><label>Ends at</label><input id="c-ends" type="datetime-local" /></div>
+            </div>
+            <div style="margin-top:12px"><button class="btn" onclick="createCampaign()">Create campaign</button></div>
+            <p id="c-err" class="muted" style="color:#fca5a5"></p>
+          </div>
+
+          <div class="card">
+            <h2>Active & past campaigns</h2>
+            <table>
+              <thead><tr><th>Advertiser</th><th>Title</th><th>Status</th><th>Impr.</th><th>Clicks</th><th>CTR</th><th></th></tr></thead>
+              <tbody id="campaigns-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="view-sources" class="hidden">
+          <div class="card">
+            <h2>Community sources</h2>
+            <p class="muted">Pending feeds auto-approve at the vote threshold, or approve them here.</p>
+            <table>
+              <thead><tr><th>Name</th><th>Status</th><th>Votes</th><th>Health</th><th></th></tr></thead>
+              <tbody id="sources-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const key = () => sessionStorage.getItem("yomi_admin_key") || "";
+      async function api(path, opts = {}) {
+        const res = await fetch(path, {
+          ...opts,
+          headers: { "content-type": "application/json", "x-admin-key": key(), ...(opts.headers || {}) },
+        });
+        if (res.status === 401) { logout(); throw new Error("unauthorized"); }
+        if (!res.ok) throw new Error("HTTP " + res.status + ": " + (await res.text()));
+        return res.status === 204 ? null : res.json();
+      }
+      function logout() { sessionStorage.removeItem("yomi_admin_key"); $("app").classList.add("hidden"); $("gate").classList.remove("hidden"); }
+      async function connect() {
+        sessionStorage.setItem("yomi_admin_key", $("key").value.trim());
+        try {
+          await api("/api/admin/sponsored");
+          $("gate").classList.add("hidden"); $("app").classList.remove("hidden");
+          $("status").textContent = "connected";
+          refreshCampaigns(); refreshSources();
+        } catch (e) { $("gateErr").textContent = "Invalid key or server unreachable."; sessionStorage.removeItem("yomi_admin_key"); }
+      }
+      function showTab(t) {
+        for (const x of ["campaigns", "sources"]) {
+          $("view-" + x).classList.toggle("hidden", x !== t);
+          $("tab-" + x).classList.toggle("active", x === t);
+        }
+      }
+      const esc = (s) => (s == null ? "" : String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])));
+
+      async function refreshCampaigns() {
+        const { items } = await api("/api/admin/sponsored");
+        $("campaigns-body").innerHTML = items.map((s) => {
+          const ctr = s.impressions > 0 ? ((s.clicks / s.impressions) * 100).toFixed(1) + "%" : "—";
+          return `<tr>
+            <td>${esc(s.advertiser)}</td>
+            <td>${esc(s.title)}<div class="muted">${esc(s.targetUrl)}</div></td>
+            <td><span class="pill ${s.active ? "approved" : "rejected"}">${s.active ? "active" : "paused"}</span></td>
+            <td>${s.impressions}</td><td>${s.clicks}</td><td>${ctr}</td>
+            <td class="row-actions">
+              <button class="btn ghost small" onclick="toggleCampaign(${s.id}, ${!s.active})">${s.active ? "Pause" : "Resume"}</button>
+              <button class="btn danger small" onclick="deleteCampaign(${s.id})">Delete</button>
+            </td></tr>`;
+        }).join("") || `<tr><td colspan="7" class="muted">No campaigns yet.</td></tr>`;
+      }
+      async function createCampaign() {
+        $("c-err").textContent = "";
+        const body = {
+          advertiser: $("c-advertiser").value.trim(),
+          title: $("c-title").value.trim(),
+          excerpt: $("c-excerpt").value.trim() || null,
+          targetUrl: $("c-url").value.trim(),
+          imageUrl: $("c-image").value.trim() || null,
+          displaySource: $("c-source").value.trim() || null,
+          tags: $("c-tags").value.split(",").map((t) => t.trim()).filter(Boolean),
+          weight: Number($("c-weight").value) || 1,
+        };
+        const starts = $("c-starts").value, ends = $("c-ends").value;
+        if (starts) body.startsAt = new Date(starts).toISOString();
+        if (ends) body.endsAt = new Date(ends).toISOString();
+        if (!body.advertiser || !body.title || !body.targetUrl) { $("c-err").textContent = "Advertiser, title and target URL are required."; return; }
+        try {
+          await api("/api/admin/sponsored", { method: "POST", body: JSON.stringify(body) });
+          for (const id of ["c-advertiser","c-title","c-excerpt","c-url","c-image","c-source","c-tags"]) $(id).value = "";
+          refreshCampaigns();
+        } catch (e) { $("c-err").textContent = String(e.message); }
+      }
+      async function toggleCampaign(id, active) { await api("/api/admin/sponsored/" + id, { method: "PATCH", body: JSON.stringify({ active }) }); refreshCampaigns(); }
+      async function deleteCampaign(id) { if (!confirm("Delete this campaign?")) return; await api("/api/admin/sponsored/" + id, { method: "DELETE" }); refreshCampaigns(); }
+
+      async function refreshSources() {
+        const { items, approveVotes } = await api("/api/admin/sources");
+        $("sources-body").innerHTML = items.map((s) => `<tr>
+          <td>${esc(s.name)}<div class="muted">${esc(s.slug)} · ${esc(s.kind)}</div></td>
+          <td><span class="pill ${esc(s.status)}">${esc(s.status)}</span></td>
+          <td>${s.votes} / ${approveVotes}</td>
+          <td class="muted">${esc(s.lastStatus || "—")}</td>
+          <td class="row-actions">
+            ${s.status !== "approved" ? `<button class="btn small" onclick="setSource(${s.id},'approved')">Approve</button>` : ""}
+            ${s.status !== "rejected" ? `<button class="btn ghost small" onclick="setSource(${s.id},'rejected')">Reject</button>` : ""}
+            <button class="btn danger small" onclick="deleteSource(${s.id})">Delete</button>
+          </td></tr>`).join("") || `<tr><td colspan="5" class="muted">No sources.</td></tr>`;
+      }
+      async function setSource(id, status) { await api("/api/admin/sources/" + id, { method: "PATCH", body: JSON.stringify({ status, enabled: status === "approved" }) }); refreshSources(); }
+      async function deleteSource(id) { if (!confirm("Delete this source and its votes?")) return; await api("/api/admin/sources/" + id, { method: "DELETE" }); refreshSources(); }
+
+      if (key()) connect();
+    </script>
+  </body>
+</html>

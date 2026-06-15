@@ -1,0 +1,9 @@
+**/node_modules
+**/.output
+**/.wxt
+**/dist
+.git
+*.log
+.env
+.env.local
+apps/extension/web-ext-artifacts
