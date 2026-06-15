@@ -16,15 +16,6 @@ function MenuButton({ onClick, children }: { onClick: () => void; children: Reac
   );
 }
 
-/** Small "open in new tab" glyph for the Read post action. */
-function ExternalIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M7 17 17 7M8 7h9v9" />
-    </svg>
-  );
-}
-
 interface Props {
   item: FeedItem;
   density: Prefs["density"];
@@ -42,6 +33,9 @@ interface Props {
   onSourceClick?: (slug: string, name: string) => void;
   index?: number;
   isSelected?: boolean;
+  /** Force the horizontal (image-left) layout regardless of density — used to
+   *  collapse the grid to rows on narrow screens. */
+  horizontal?: boolean;
 }
 
 export function ArticleCard(props: Props) {
@@ -53,9 +47,6 @@ export function ArticleCard(props: Props) {
   const [copied, setCopied] = useState(false);
   const showMenu = !sponsored && !!props.onHide;
   const isVideo = item.type === "article" && item.format === "video";
-  // The thin single-line row layout is opt-in via the "list" density. Everything
-  // else uses the daily.dev-style landscape card (title left, cover image right).
-  const isRow = density === "list";
 
   // Report sponsored impressions when the card is ≥50% visible for ≥1s.
   useEffect(() => {
@@ -82,6 +73,9 @@ export function ArticleCard(props: Props) {
 
   const upvotes = item.type === "article" ? item.upvotes + (bumped ? 1 : 0) : 0;
   const comments = item.type === "article" ? item.comments : 0;
+  // Horizontal (image-left row) when the user picks "list" density OR the grid
+  // has collapsed to a single column on a narrow screen.
+  const compact = density === "list" || !!props.horizontal;
 
   const handleUpvote = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -103,35 +97,41 @@ export function ArticleCard(props: Props) {
     });
   };
 
-  const renderAvatar = (sizeCls: string, roundCls: string) =>
-    item.source.iconUrl ? (
-      <img src={item.source.iconUrl} alt="" className={`${sizeCls} ${roundCls} object-cover`} referrerPolicy="no-referrer" />
-    ) : (
-      <span className={`grid ${sizeCls} ${roundCls} place-items-center bg-zinc-200 text-xs font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-200`}>
-        {item.source.name.charAt(0).toUpperCase()}
-      </span>
-    );
+  const avatarEl = item.source.iconUrl ? (
+    <img src={item.source.iconUrl} alt="" className="h-7 w-7 rounded-full object-cover" referrerPolicy="no-referrer" />
+  ) : (
+    <span className="grid h-7 w-7 place-items-center rounded-full bg-zinc-200 text-xs font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-200">
+      {item.source.name.charAt(0).toUpperCase()}
+    </span>
+  );
 
   const sourceNameEl = !sponsored && props.onSourceClick ? (
     <button
       onClick={(e) => { e.stopPropagation(); props.onSourceClick?.(item.source.slug, item.source.name); }}
-      className="truncate hover:text-emerald-600 hover:underline dark:hover:text-emerald-400"
+      className="truncate font-medium hover:text-emerald-600 hover:underline dark:hover:text-emerald-400"
     >
       {item.source.name}
     </button>
   ) : (
-    <span className="truncate">{item.source.name}</span>
+    <span className="truncate font-medium">{item.source.name}</span>
   );
 
-  // Sub-line under the source name: "5m read · 2h ago" (or a Promoted tag).
-  const metaText =
-    item.type === "article"
-      ? [isVideo ? "Video" : item.readingMinutes ? `${item.readingMinutes}m read` : null, relativeTime(item.publishedAt)]
-          .filter(Boolean)
-          .join(" · ")
-      : null;
+  const metaEl =
+    item.type === "article" ? (
+      <>
+        <time>{relativeTime(item.publishedAt)}</time>
+        {isVideo ? (
+          <><span aria-hidden>·</span><span className="font-medium text-rose-500 dark:text-rose-400">Video</span></>
+        ) : item.readingMinutes ? (
+          <><span aria-hidden>·</span><span>{item.readingMinutes}m read</span></>
+        ) : null}
+      </>
+    ) : (
+      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+        Promoted
+      </span>
+    );
 
-  const extraTags = item.tags.length - 3;
   const tagsEl =
     item.tags.length > 0 ? (
       <div className="flex min-w-0 flex-wrap items-center gap-1.5 overflow-hidden">
@@ -144,11 +144,6 @@ export function ArticleCard(props: Props) {
             #{t}
           </button>
         ))}
-        {extraTags > 0 ? (
-          <span className="rounded-lg border border-zinc-200 px-2 py-0.5 text-[11px] text-zinc-400 dark:border-zinc-700 dark:text-zinc-500">
-            +{extraTags}
-          </span>
-        ) : null}
       </div>
     ) : null;
 
@@ -174,18 +169,6 @@ export function ArticleCard(props: Props) {
         </>
       ) : null}
     </div>
-  ) : null;
-
-  const readPostEl = !sponsored ? (
-    <a
-      href={item.url}
-      target="_blank"
-      rel="noreferrer noopener"
-      onClick={(e) => e.stopPropagation()}
-      className="hidden items-center gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-600 transition hover:bg-zinc-100 group-hover:flex dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-    >
-      Read post <ExternalIcon />
-    </a>
   ) : null;
 
   const actionsEl = !sponsored ? (
@@ -230,9 +213,14 @@ export function ArticleCard(props: Props) {
     </div>
   ) : null;
 
-  const renderImage = (cls: string) => (
+  const imageEl = (
     <div className="relative overflow-hidden rounded-xl">
-      <ArticleImage src={item.imageUrl} alt="" sourceName={item.source.name} className={cls} />
+      <ArticleImage
+        src={item.imageUrl}
+        alt=""
+        sourceName={item.source.name}
+        className={compact ? "h-full w-28 object-cover sm:w-36" : "h-36 w-full object-cover"}
+      />
       {isVideo ? (
         <span className="absolute inset-0 flex items-center justify-center bg-black/15">
           <span className="grid h-11 w-11 place-items-center rounded-full bg-black/65 text-white shadow-lg">
@@ -251,16 +239,17 @@ export function ArticleCard(props: Props) {
     isRead && !sponsored ? "opacity-65" : "",
   ].join(" ");
 
-  // Thin single-line row ("list" density): small image left, title right.
-  if (isRow) {
+  // Horizontal layout (image left, content right) — "list" density or narrow screen.
+  if (compact) {
     return (
       <article ref={ref as React.RefObject<HTMLElement>} data-card-index={props.index} onClick={() => props.onOpen(item)} className={`${baseClass} flex-row items-stretch overflow-hidden p-0`}>
-        <div className="shrink-0 p-1">{renderImage("h-full w-28 object-cover sm:w-36")}</div>
+        <div className="shrink-0 p-1">{imageEl}</div>
         <div className="flex min-w-0 flex-1 flex-col gap-1.5 py-3 pr-3">
           <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-            {renderAvatar("h-6 w-6", "rounded-full")}
-            <span className="truncate font-medium">{sourceNameEl}</span>
-            {metaText ? <><span aria-hidden>·</span><span className="truncate">{metaText}</span></> : <span className="font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">Promoted</span>}
+            {avatarEl}
+            {sourceNameEl}
+            <span aria-hidden>·</span>
+            {metaEl}
             <span className="ml-auto">{menuEl}</span>
           </div>
           <h3 className="line-clamp-2 font-bold leading-snug text-zinc-900 dark:text-zinc-50">{item.title}</h3>
@@ -271,40 +260,34 @@ export function ArticleCard(props: Props) {
     );
   }
 
-  // daily.dev-style landscape card: header (source + read post) → title left /
-  // cover image right (stacks on narrow) → tags → full-width action bar.
+  // Card density: avatar header → title → tags → time → image → actions (daily.dev order).
   return (
     <article
       ref={ref as React.RefObject<HTMLElement>}
       data-card-index={props.index}
       onClick={() => props.onOpen(item)}
-      className={`${baseClass} flex-col gap-3 p-4`}
+      className={`${baseClass} min-h-[18rem] flex-col p-0`}
     >
-      <header className="flex items-center gap-2.5">
-        <span className="shrink-0">{renderAvatar("h-9 w-9", "rounded-lg")}</span>
-        <div className="min-w-0 flex-1 leading-tight">
-          <div className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">{sourceNameEl}</div>
-          {metaText ? (
-            <div className="truncate text-xs text-zinc-500 dark:text-zinc-400">{metaText}</div>
-          ) : (
-            <div className="text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">Promoted</div>
-          )}
-        </div>
-        {readPostEl}
-        {menuEl}
-      </header>
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <h3 className="line-clamp-3 break-words text-lg font-bold leading-snug text-zinc-900 dark:text-zinc-50">{item.title}</h3>
-          <div className="mt-auto pt-1">{tagsEl}</div>
-        </div>
-        <div className="aspect-video w-full overflow-hidden rounded-xl sm:aspect-[4/3] sm:w-48 sm:shrink-0">
-          {renderImage("h-full w-full object-cover")}
-        </div>
+      <div className="flex flex-col px-4">
+        <header className="-mx-1.5 mt-4 flex h-8 items-center gap-2">
+          {avatarEl}
+          <span className="min-w-0 flex-1 truncate text-sm text-zinc-500 dark:text-zinc-400">{sourceNameEl}</span>
+          <span className="opacity-0 transition group-hover:opacity-100">{menuEl}</span>
+        </header>
+        <h3 className="mt-2 line-clamp-3 break-words font-bold text-zinc-900 dark:text-zinc-50">{item.title}</h3>
       </div>
 
-      {actionsEl ? <div className="border-t border-zinc-100 pt-1 dark:border-zinc-800/80">{actionsEl}</div> : null}
+      <div className="flex-1" />
+
+      <div className="flex flex-col gap-1.5 px-4">
+        {tagsEl}
+        <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">{metaEl}</div>
+      </div>
+
+      <div className="flex flex-col px-1 pb-1">
+        <div className="mb-1 mt-2 px-1">{imageEl}</div>
+        {actionsEl ? <div className="px-1">{actionsEl}</div> : null}
+      </div>
     </article>
   );
 }
