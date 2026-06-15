@@ -20,8 +20,9 @@ const EnvSchema = z.object({
     .default("true")
     .transform((v) => v === "true"),
   GRAVITY: z.coerce.number().default(1.6),
-  // Community submissions auto-approve once they reach this many votes.
-  SOURCE_APPROVE_VOTES: z.coerce.number().int().min(1).default(8),
+  // Minimum votes for a community source to auto-approve. The real threshold is
+  // max(this floor, a majority of all known users). Admins can override either way.
+  SOURCE_APPROVE_VOTES: z.coerce.number().int().min(1).default(10),
   CORS_ORIGIN: z.string().default("*"),
   INGEST_CONTACT_URL: z
     .string()

@@ -4,6 +4,7 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { EventBodySchema, EventResponseSchema } from "@daily-alt/shared";
 import { db } from "../db/client";
 import { articles, sponsoredPosts, upvoteEvents } from "../db/schema";
+import { touchDevice } from "../lib/devices";
 
 export async function eventRoutes(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -17,6 +18,7 @@ export async function eventRoutes(app: FastifyInstance) {
     },
     handler: async (req) => {
       const { type, targetType, targetId, deviceId } = req.body;
+      void touchDevice(deviceId);
 
       if (targetType === "sponsored") {
         const col = type === "click" ? sponsoredPosts.clicks : sponsoredPosts.impressions;

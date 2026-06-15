@@ -144,6 +144,13 @@ export const upvoteEvents = pgTable(
   }),
 );
 
+/** Anonymous device registry — denominator for "majority of users" votes. */
+export const devices = pgTable("devices", {
+  deviceId: uuid("device_id").primaryKey(),
+  firstSeen: timestamp("first_seen", { withTimezone: true }).notNull().defaultNow(),
+  lastSeen: timestamp("last_seen", { withTimezone: true }).notNull().defaultNow(),
+});
+
 /** Anonymous E2E-encrypted sync mailbox: opaque id -> ciphertext. */
 export const syncBlobs = pgTable("sync_blobs", {
   accountId: text("account_id").primaryKey(),

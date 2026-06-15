@@ -13,6 +13,7 @@ import { sources, sourceVotes, type SourceRow } from "../db/schema";
 import { env } from "../env";
 import { fetchFeedMeta } from "../ingest/rss";
 import { adminGuard } from "../lib/adminAuth";
+import { approvalThreshold, touchDevice } from "../lib/devices";
 
 function slugify(input: string): string {
   return (
@@ -96,7 +97,7 @@ export async function sourceRoutes(app: FastifyInstance) {
 
       return {
         items: rows.map((r) => toListItem(r, votedIds.has(r.id))),
-        approveVotes: env.SOURCE_APPROVE_VOTES,
+        approveVotes: await approvalThreshold(env.SOURCE_APPROVE_VOTES),
       };
     },
   });
@@ -116,6 +117,7 @@ export async function sourceRoutes(app: FastifyInstance) {
     },
     handler: async (req, reply) => {
       const { feedUrl, deviceId } = req.body;
+      void touchDevice(deviceId);
 
       // Already submitted/known? Return it (idempotent, friendly).
       const [existing] = await db.select().from(sources).where(eq(sources.feedUrl, feedUrl)).limit(1);
@@ -179,6 +181,7 @@ export async function sourceRoutes(app: FastifyInstance) {
     handler: async (req, reply) => {
       const { id } = req.params;
       const { deviceId } = req.body;
+      void touchDevice(deviceId);
 
       const [src] = await db.select().from(sources).where(eq(sources.id, id)).limit(1);
       if (!src) return reply.code(404).send({ error: "not found" });
@@ -194,7 +197,9 @@ export async function sourceRoutes(app: FastifyInstance) {
       }
 
       const newVotes = src.votes + 1;
-      const approve = src.status === "pending" && newVotes >= env.SOURCE_APPROVE_VOTES;
+      // Auto-approve at a majority of users (>50%), floored at SOURCE_APPROVE_VOTES.
+      const threshold = await approvalThreshold(env.SOURCE_APPROVE_VOTES);
+      const approve = src.status === "pending" && newVotes >= threshold;
       const [row] = await db
         .update(sources)
         .set({ votes: newVotes, ...(approve ? { status: "approved" } : {}) })
