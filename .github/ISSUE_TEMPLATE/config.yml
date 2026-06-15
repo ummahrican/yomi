@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Questions & ideas
+    url: https://github.com/ummahrican/yomi/discussions
+    about: Ask questions or discuss ideas in Discussions.
+  - name: 🔐 Report a security vulnerability
+    url: https://github.com/ummahrican/yomi/security/advisories/new
+    about: Please report security issues privately — not as a public issue.
+  - name: ➕ Suggest a source
+    url: https://github.com/ummahrican/yomi/blob/main/CONTRIBUTING.md#-ways-to-contribute
+    about: The easiest way to add a source is the in-app community submission flow.

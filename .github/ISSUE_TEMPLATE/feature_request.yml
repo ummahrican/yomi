@@ -1,0 +1,32 @@
+name: ✨ Feature request
+description: Suggest an idea or improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What are you trying to do that's hard or impossible today?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What you'd like to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+  - type: checkboxes
+    id: ethos
+    attributes:
+      label: Privacy check
+      description: Yomi is privacy-first by design.
+      options:
+        - label: This feature does not require tracking users, adding analytics/third-party SDKs, or moving personal data off-device.
+          required: true

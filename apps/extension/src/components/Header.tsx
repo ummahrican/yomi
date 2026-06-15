@@ -18,7 +18,17 @@ export function Header(props: Props) {
     <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/85 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/85">
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
         <div className="flex items-center gap-2 font-bold text-zinc-900 dark:text-zinc-50">
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-emerald-500 font-bold text-white">Y</span>
+          <svg viewBox="0 0 128 128" className="h-7 w-7" role="img" aria-label="Yomi">
+            <rect width="128" height="128" rx="28" fill="#10b981" />
+            <g fill="#fff">
+              <circle cx="30.7" cy="38.4" r="9.6" />
+              <rect x="43.5" y="28.8" width="56.5" height="19.2" rx="9.6" />
+              <circle cx="30.7" cy="64" r="9.6" />
+              <rect x="43.5" y="54.4" width="56.5" height="19.2" rx="9.6" />
+              <circle cx="30.7" cy="89.6" r="9.6" />
+              <rect x="43.5" y="80" width="33.5" height="19.2" rx="9.6" />
+            </g>
+          </svg>
           <span className="hidden sm:inline">Yomi</span>
         </div>
 
