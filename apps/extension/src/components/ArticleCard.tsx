@@ -33,6 +33,9 @@ interface Props {
   onSourceClick?: (slug: string, name: string) => void;
   index?: number;
   isSelected?: boolean;
+  /** Force the horizontal (image-left) layout regardless of density — used to
+   *  collapse the grid to rows on narrow screens. */
+  horizontal?: boolean;
 }
 
 export function ArticleCard(props: Props) {
@@ -70,7 +73,9 @@ export function ArticleCard(props: Props) {
 
   const upvotes = item.type === "article" ? item.upvotes + (bumped ? 1 : 0) : 0;
   const comments = item.type === "article" ? item.comments : 0;
-  const isList = density === "list";
+  // Horizontal (image-left row) when the user picks "list" density OR the grid
+  // has collapsed to a single column on a narrow screen.
+  const compact = density === "list" || !!props.horizontal;
 
   const handleUpvote = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -214,7 +219,7 @@ export function ArticleCard(props: Props) {
         src={item.imageUrl}
         alt=""
         sourceName={item.source.name}
-        className={isList ? "h-full w-32 object-cover sm:w-40" : "h-40 w-full object-cover"}
+        className={compact ? "h-full w-28 object-cover sm:w-36" : "h-36 w-full object-cover"}
       />
       {isVideo ? (
         <span className="absolute inset-0 flex items-center justify-center bg-black/15">
@@ -234,8 +239,8 @@ export function ArticleCard(props: Props) {
     isRead && !sponsored ? "opacity-65" : "",
   ].join(" ");
 
-  // Compact "list" density: image left, content right.
-  if (isList) {
+  // Horizontal layout (image left, content right) — "list" density or narrow screen.
+  if (compact) {
     return (
       <article ref={ref as React.RefObject<HTMLElement>} data-card-index={props.index} onClick={() => props.onOpen(item)} className={`${baseClass} flex-row items-stretch overflow-hidden p-0`}>
         <div className="shrink-0 p-1">{imageEl}</div>
@@ -261,7 +266,7 @@ export function ArticleCard(props: Props) {
       ref={ref as React.RefObject<HTMLElement>}
       data-card-index={props.index}
       onClick={() => props.onOpen(item)}
-      className={`${baseClass} min-h-[22rem] flex-col p-0`}
+      className={`${baseClass} min-h-[18rem] flex-col p-0`}
     >
       <div className="flex flex-col px-4">
         <header className="-mx-1.5 mt-4 flex h-8 items-center gap-2">
