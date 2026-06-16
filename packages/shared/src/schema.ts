@@ -151,7 +151,10 @@ export const SourceListItemSchema = z.object({
   homepageUrl: z.string().nullable(),
   iconUrl: z.string().nullable(),
   status: z.string(), // 'approved' | 'pending' | 'rejected'
-  votes: z.number(),
+  votes: z.number(), // raw vote count (one per device)
+  // Trust-weighted vote demand — only votes from established devices. Admin
+  // moderation view only; omitted on the public listing.
+  weightedVotes: z.number().optional(),
   voted: z.boolean(), // has this device already voted?
   lastStatus: z.string().nullable(),
 });
@@ -159,7 +162,7 @@ export type SourceListItem = z.infer<typeof SourceListItemSchema>;
 
 export const SourcesResponseSchema = z.object({
   items: z.array(SourceListItemSchema),
-  approveVotes: z.number(), // threshold for auto-approval
+  approveVotes: z.number(), // "suggested demand" hint (not a gate; admins approve)
 });
 export type SourcesResponse = z.infer<typeof SourcesResponseSchema>;
 

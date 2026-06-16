@@ -73,6 +73,11 @@ export async function queryOrganic(opts: QueryOpts): Promise<OrganicRow[]> {
   // (so e.g. a YouTube channel's back catalog is always reachable).
   const windowDays = opts.sourceSlugs?.length ? 3650 : opts.q ? 365 : 90;
   conditions.push(sql`a.published_at > now() - (${windowDays} || ' days')::interval`);
+  // Only ever surface live sources. Mirrors the ingest filter in
+  // ingest/runner.ts — without this, articles from a source that was later
+  // rejected or disabled would linger in the feed (the moderation gate would be
+  // toothless against already-ingested content).
+  conditions.push(sql`s.status = 'approved' AND s.enabled = true`);
   // NOTE: interpolating a JS array into drizzle's sql`` comma-expands it into
   // separate params (handy for IN lists), it does NOT make a Postgres array.
   // So we build IN (...) / ARRAY[...] explicitly with sql.join.

@@ -13,7 +13,7 @@ import { sources, sourceVotes, type SourceRow } from "../db/schema";
 import { env } from "../env";
 import { fetchFeedMeta } from "../ingest/rss";
 import { adminGuard } from "../lib/adminAuth";
-import { approvalThreshold, touchDevice } from "../lib/devices";
+import { touchDevice, weightedVotesBySource } from "../lib/devices";
 
 function slugify(input: string): string {
   return (
@@ -97,7 +97,7 @@ export async function sourceRoutes(app: FastifyInstance) {
 
       return {
         items: rows.map((r) => toListItem(r, votedIds.has(r.id))),
-        approveVotes: await approvalThreshold(env.SOURCE_APPROVE_VOTES),
+        approveVotes: env.SOURCE_APPROVE_VOTES,
       };
     },
   });
@@ -168,7 +168,8 @@ export async function sourceRoutes(app: FastifyInstance) {
     },
   });
 
-  // Vote for a pending source; auto-approve at the threshold.
+  // Vote for a pending source. Votes are a *demand signal only* — they never
+  // auto-publish a source (that requires an admin). See adminSourceRoutes.
   typed.route({
     method: "POST",
     url: "/api/sources/:id/vote",
@@ -196,13 +197,12 @@ export async function sourceRoutes(app: FastifyInstance) {
         return { ok: true, votes: src.votes, status: src.status };
       }
 
-      const newVotes = src.votes + 1;
-      // Auto-approve at a majority of users (>50%), floored at SOURCE_APPROVE_VOTES.
-      const threshold = await approvalThreshold(env.SOURCE_APPROVE_VOTES);
-      const approve = src.status === "pending" && newVotes >= threshold;
+      // Record the vote (raw tally) but never change status — approval is a
+      // human decision in the admin dashboard. This is the core anti-abuse gate:
+      // no amount of (even sybil) voting can publish a source on its own.
       const [row] = await db
         .update(sources)
-        .set({ votes: newVotes, ...(approve ? { status: "approved" } : {}) })
+        .set({ votes: src.votes + 1 })
         .where(eq(sources.id, id))
         .returning({ votes: sources.votes, status: sources.status });
 
@@ -221,11 +221,24 @@ export async function adminSourceRoutes(app: FastifyInstance) {
     url: "/api/admin/sources",
     schema: { response: { 200: SourcesResponseSchema } },
     handler: async () => {
-      const rows = await db.select().from(sources).orderBy(desc(sources.status), desc(sources.votes));
-      return {
-        items: rows.map((r) => toListItem(r, false)),
-        approveVotes: env.SOURCE_APPROVE_VOTES,
-      };
+      const [rows, weights] = await Promise.all([
+        db.select().from(sources),
+        weightedVotesBySource(),
+      ]);
+      const items = rows.map((r) => ({
+        ...toListItem(r, false),
+        weightedVotes: weights.get(r.id) ?? 0,
+      }));
+      // Surface the actionable queue first: pending sources, ordered by real
+      // (trust-weighted) demand, then raw votes; everything else after.
+      items.sort((a, b) => {
+        const ap = a.status === "pending" ? 0 : 1;
+        const bp = b.status === "pending" ? 0 : 1;
+        if (ap !== bp) return ap - bp;
+        if (b.weightedVotes !== a.weightedVotes) return b.weightedVotes - a.weightedVotes;
+        return b.votes - a.votes;
+      });
+      return { items, approveVotes: env.SOURCE_APPROVE_VOTES };
     },
   });
 

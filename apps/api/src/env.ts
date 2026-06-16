@@ -23,9 +23,15 @@ const EnvSchema = z.object({
     .default("true")
     .transform((v) => v === "true"),
   GRAVITY: z.coerce.number().default(1.6),
-  // Minimum votes for a community source to auto-approve. The real threshold is
-  // max(this floor, a majority of all known users). Admins can override either way.
+  // Community sources never auto-publish — an admin approves them. This is a
+  // "suggested demand" hint shown in the dashboard/extension (votes / this), to
+  // help admins prioritize the moderation queue. Not a gate.
   SOURCE_APPROVE_VOTES: z.coerce.number().int().min(1).default(10),
+  // Trust-weighting for the moderation queue: a vote only counts toward a
+  // source's *weighted demand* if the voting device is "established" — at least
+  // this many hours old (or returning / genuinely active). Blunts sybil bursts
+  // of freshly-minted device UUIDs without any account or tracking.
+  VOTE_TRUST_MIN_AGE_HOURS: z.coerce.number().int().min(0).default(24),
   CORS_ORIGIN: z.string().default("*"),
   INGEST_CONTACT_URL: z
     .string()

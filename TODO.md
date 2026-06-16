@@ -13,10 +13,10 @@ Legend: ☐ todo · 🔥 blocks launch · 👤 needs you (account/secret/asset) 
 The code is done; these visuals are the main thing gating the store + landing page.
 
 ### A1. 🔥 Hero product demo (highest impact)
-- ☐ Record a **~10–15s muted screen capture** of the new-tab feed: open a new tab → feed loads → scroll → hover a card → open the reader with HN comments → bookmark. Calm, smooth, dark mode.
-- ☐ Export **two** formats for the landing hero: `webm`/`mp4` (autoplay, muted, loop) and a fallback poster image.
+- ✅ Record a **~10–15s muted screen capture** of the new-tab feed: open a new tab → feed loads → scroll → hover a card → open the reader with HN comments → bookmark. Calm, smooth, dark mode.
+- ✅ Export formats: `mp4` (autoplay, muted, loop) → `site/demo.mp4`, plus a `gif` → `docs/demo.gif` for the README. _(Poster fallback skipped — the muted video autoplays; add one later if needed.)_
 - **Tooling (macOS):** QuickTime or [Kap](https://getkap.co) to record → trim → export. Convert/compress with `ffmpeg` (e.g. `ffmpeg -i in.mov -vf scale=1280:-2 -an -movflags +faststart out.mp4`) or make a GIF with `gifski` if you prefer.
-- ☐ Drop it into `site/index.html` (replace the `.shot .ph` placeholder).
+- ✅ Drop it into `site/index.html` (replaced the `.shot .ph` placeholder with an autoplay `<video>`).
 
 ### A2. 🔥 Feature screenshots (for landing + stores)
 Capture these 5 in dark mode, populated feed, clean window (hide bookmarks bar):
@@ -37,7 +37,7 @@ Capture these 5 in dark mode, populated feed, clean window (hide bookmarks bar):
 - ☐ **1200×630** OG image (logo + tagline "Tech news on every new tab, without the tracking") for link previews. Add `<meta property="og:image">` to `site/index.html` (placeholder TODO already in the file).
 
 ### A5. Icon polish (optional)
-- ☐ Current icon is a clean generated placeholder (`pnpm icons`, the indigo feed-glyph). Good enough to ship; commission a designer later if you want a distinctive mark. Store icon = the 128px (already produced).
+- ✅ Replaced the generated placeholder with the real Yomi logo: `logo.svg` plus derived `icon16/32/48/128.webp` in `apps/extension/public/icon` (wired into `wxt.config.ts`). Store icon = the 128px (already produced).
 
 ---
 

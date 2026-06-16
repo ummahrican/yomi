@@ -24,10 +24,10 @@ export function ArticleImage({
         }}
         aria-hidden
       >
-        {/* Default cover for posts without an image: the Yomi logo (logov1.webp),
-            zoomed to crop the asset's padding, on a source-tinted gradient. */}
-        <span className="grid h-12 w-12 place-items-center overflow-hidden rounded-2xl bg-white shadow-sm">
-          <img src="/logov1.webp" alt="" className="h-full w-full scale-[1.6] object-cover" />
+        {/* Default cover for posts without an image: the Yomi logo on a
+            source-tinted gradient. */}
+        <span className="grid h-16 w-16 place-items-center overflow-hidden rounded-2xl bg-white shadow-sm">
+          <img src="/logo.svg" alt="" className="h-full w-full object-contain p-1" />
         </span>
         <span className="line-clamp-1 px-3 text-center text-xs font-medium text-white/85">
           {sourceName}
