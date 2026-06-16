@@ -1,6 +1,6 @@
 <div align="center">
   <br>
-  <img alt="Yomi" src="apps/extension/public/icon/512.png" width="200px">
+  <img alt="Yomi" src="apps/extension/public/logo.svg" width="200px">
   <h1>Yomi</h1>
   <strong>The latest in tech on every new tab — open, private, yours. A self-hostable alternative to <a href="https://daily.dev">daily.dev</a>.</strong>
 </div>
@@ -11,6 +11,10 @@
   <img src="https://img.shields.io/github/languages/code-size/ummahrican/yomi" alt="GitHub code size in bytes">
   <img src="https://img.shields.io/github/last-commit/ummahrican/yomi" alt="Last commit">
 </p>
+
+<div align="center">
+  <img src="docs/demo.gif" alt="Yomi demo — a ranked tech feed on every new tab" width="100%">
+</div>
 
 Yomi is a browser new-tab extension that replaces every new tab with a ranked feed of the latest tech articles — aggregated from hundreds of developer blogs, the [Hacker News](https://news.ycombinator.com) API, and [DEV](https://dev.to). **No accounts, no tracking**: your bookmarks, history, and preferences stay on your device, and the server is stateless about you. It's a clean-room, open alternative to daily.dev (not affiliated) that you can self-host and share freely.
 

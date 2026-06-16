@@ -18,10 +18,8 @@ export function Header(props: Props) {
     <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/85 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/85">
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
         <div className="flex items-center gap-2 font-bold text-zinc-900 dark:text-zinc-50">
-          {/* Placeholder logo (logov1.webp). Zoomed slightly to crop the asset's
-              built-in padding so the mark fills the chip. */}
           <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg bg-white">
-            <img src="/logov1.webp" alt="Yomi" className="h-full w-full scale-[1.7] object-cover" />
+            <img src="/logo.svg" alt="Yomi" className="h-full w-full object-contain p-0.5" />
           </span>
           <span className="hidden sm:inline">Yomi</span>
         </div>

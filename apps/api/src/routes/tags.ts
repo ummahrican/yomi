@@ -20,11 +20,15 @@ export async function tagRoutes(app: FastifyInstance) {
     handler: async () => {
       if (cache && Date.now() - cache.at < TTL_MS) return { tags: cache.data };
 
-      // Unnest tags over recent articles and count, top 40.
+      // Unnest tags over recent articles from live sources and count, top 40.
+      // Joins sources so a rejected/disabled source's tags don't linger here.
       const result = await db.execute(sql`
         SELECT tag AS name, count(*)::int AS count
-        FROM articles, unnest(tags) AS tag
-        WHERE published_at > now() - interval '45 days'
+        FROM articles a
+        JOIN sources s ON s.id = a.source_id,
+             unnest(a.tags) AS tag
+        WHERE a.published_at > now() - interval '45 days'
+          AND s.status = 'approved' AND s.enabled = true
         GROUP BY tag
         ORDER BY count DESC
         LIMIT 40

@@ -96,9 +96,9 @@
         <section id="view-sources" class="hidden">
           <div class="card">
             <h2>Community sources</h2>
-            <p class="muted">Pending feeds auto-approve at the vote threshold, or approve them here.</p>
+            <p class="muted">Pending feeds stay hidden until you approve them. "Demand" shows trust-weighted votes (from established devices) over raw votes — a big gap means bot/sybil voting.</p>
             <table>
-              <thead><tr><th>Name</th><th>Status</th><th>Votes</th><th>Health</th><th></th></tr></thead>
+              <thead><tr><th>Name</th><th>Status</th><th>Demand (real / raw)</th><th>Health</th><th></th></tr></thead>
               <tbody id="sources-body"></tbody>
             </table>
           </div>
@@ -181,7 +181,7 @@
         $("sources-body").innerHTML = items.map((s) => `<tr>
           <td>${esc(s.name)}<div class="muted">${esc(s.slug)} · ${esc(s.kind)}</div></td>
           <td><span class="pill ${esc(s.status)}">${esc(s.status)}</span></td>
-          <td>${s.votes} / ${approveVotes}</td>
+          <td title="suggested demand ≈ ${approveVotes}"><b>${s.weightedVotes ?? 0}</b> real / ${s.votes} raw</td>
           <td class="muted">${esc(s.lastStatus || "—")}</td>
           <td class="row-actions">
             ${s.status !== "approved" ? `<button class="btn small" onclick="setSource(${s.id},'approved')">Approve</button>` : ""}

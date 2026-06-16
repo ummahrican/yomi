@@ -13,3 +13,6 @@ coverage/
 .turbo/
 stats.html
 web-ext-artifacts/
+
+# Local screen-capture sources (re-encode into docs/demo.mp4 / demo.gif)
+docs/*.mov
