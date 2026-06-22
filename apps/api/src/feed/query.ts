@@ -99,6 +99,10 @@ export async function queryOrganic(opts: QueryOpts): Promise<OrganicRow[]> {
     ? sql`(CASE WHEN tags && ARRAY[${list(opts.boostTags)}]::text[] THEN 4.0 ELSE 1 END)`
     : sql`1`;
 
+  // Handicap the Hacker News aggregator so it interleaves with individual
+  // sources instead of flooding the feed. Applied only to kind='hn'.
+  const hnWeight = sql`(CASE WHEN source_kind = 'hn' THEN ${env.HN_RANK_WEIGHT}::float8 ELSE 1 END)`;
+
   const result = await db.execute(sql`
     WITH scored AS (
       SELECT
@@ -106,6 +110,7 @@ export async function queryOrganic(opts: QueryOpts): Promise<OrganicRow[]> {
         a.tags, a.published_at, a.upvotes, a.external_comments,
         a.format, a.reading_minutes, a.comments_url,
         s.slug AS source_slug, s.name AS source_name, s.icon_url AS source_icon,
+        s.kind AS source_kind,
         ${score} AS score,
         row_number() OVER (PARTITION BY a.source_id ORDER BY ${score} DESC) AS src_rank
       FROM articles a
@@ -113,7 +118,7 @@ export async function queryOrganic(opts: QueryOpts): Promise<OrganicRow[]> {
       WHERE ${whereSql}
     )
     SELECT * FROM scored
-    ORDER BY score * power(0.6, src_rank - 1) * ${boost} DESC, id DESC
+    ORDER BY score * power(0.6, src_rank - 1) * ${boost} * ${hnWeight} DESC, id DESC
     LIMIT ${opts.limit} OFFSET ${opts.offset}
   `);
 
