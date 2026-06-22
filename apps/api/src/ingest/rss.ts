@@ -40,8 +40,19 @@ const FEED_HEADERS = {
 // redirects) and hand the XML to parseString — so the parser never makes its
 // own network request and never follows a redirect unchecked.
 async function fetchAndParse(feedUrl: string) {
-  const xml = await safeFetchText(feedUrl, { headers: FEED_HEADERS });
-  return parser.parseString(xml);
+  // One retry on a short delay: feeds like YouTube intermittently serve 404/429
+  // to bots, and a single blip shouldn't count toward a source's failure cap.
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const xml = await safeFetchText(feedUrl, { headers: FEED_HEADERS });
+      return await parser.parseString(xml);
+    } catch (err) {
+      lastErr = err;
+      if (attempt === 0) await new Promise((r) => setTimeout(r, 500));
+    }
+  }
+  throw lastErr;
 }
 
 const parser: Parser<unknown, CustomItem> = new Parser({

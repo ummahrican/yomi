@@ -109,7 +109,7 @@ Type checking via `tsc` is the source of truth today (`pnpm -r typecheck`). An E
 Deploy via [**Dokploy**](deploy/DOKPLOY.md) (recommended — Traefik handles TLS, managed Postgres handles backups) or any Docker host. Build store-ready extension packages with your API origin baked in (`host_permissions` auto-tightens to it):
 
 ```shell
-VITE_API_BASE_URL=https://api.yourdomain pnpm --filter @daily-alt/extension zip:prod
+VITE_API_BASE_URL=https://api.yomi.fyi pnpm --filter @daily-alt/extension zip:prod
 ```
 
 The full prioritized checklist, a bare-VPS runbook, and store-submission requirements live in [`docs/PRODUCTION_READINESS.md`](docs/PRODUCTION_READINESS.md).

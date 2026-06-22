@@ -11,6 +11,7 @@ import { env } from "./env";
 import { startScheduler } from "./ingest/scheduler";
 import { adminRoutes } from "./routes/admin";
 import { adminPageRoutes } from "./routes/adminPage";
+import { adminStatsRoutes } from "./routes/adminStats";
 import { articleRoutes } from "./routes/article";
 import { eventRoutes } from "./routes/events";
 import { feedRoutes } from "./routes/feed";
@@ -20,7 +21,13 @@ import { tagRoutes } from "./routes/tags";
 
 async function build() {
   // 8MB body limit so a heavy bookmark backup can sync in one push.
-  const app = Fastify({ logger: true, bodyLimit: 8 * 1024 * 1024 }).withTypeProvider<ZodTypeProvider>();
+  const app = Fastify({
+    logger: true,
+    bodyLimit: 8 * 1024 * 1024,
+    // Behind a reverse proxy, read the real client IP from X-Forwarded-For so
+    // the admin IP allowlist and per-IP throttle work. Opt-in (see env.ts).
+    trustProxy: env.TRUST_PROXY,
+  }).withTypeProvider<ZodTypeProvider>();
 
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
@@ -40,6 +47,7 @@ async function build() {
   await app.register(syncRoutes);
   await app.register(adminRoutes);
   await app.register(adminSourceRoutes);
+  await app.register(adminStatsRoutes);
   await app.register(adminPageRoutes);
 
   return app;
