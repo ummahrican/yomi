@@ -55,6 +55,23 @@ export default defineConfig({
       gecko: {
         id: "yomi@yomi.dev",
         strict_min_version: "115.0",
+        // Required by AMO for new submissions (mzl.la/firefox-builtin-data-consent).
+        // Default install collects nothing — everything is on-device. Only the
+        // optional, opt-in sync transmits data, and it's end-to-end encrypted
+        // (see src/lib/sync.ts: encrypt() before syncPush; phrase/keys never leave
+        // the device). bookmarksInfo = saved articles; browsingActivity = read/
+        // upvoted state + followed sources/tags. Mirrors the Chrome data disclosure.
+        data_collection_permissions: {
+          required: ["none"],
+          optional: ["bookmarksInfo", "browsingActivity"],
+        },
+        // WXT 0.19.13's gecko manifest type predates AMO's data_collection_permissions
+        // field, so assert the extended shape here. Drop the cast once the upstream
+        // types include it.
+      } as {
+        id: string;
+        strict_min_version: string;
+        data_collection_permissions: { required: string[]; optional: string[] };
       },
     },
   },
