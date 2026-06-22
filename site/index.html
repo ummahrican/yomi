@@ -26,6 +26,7 @@
         <meta name="twitter:card" content="summary_large_image" />
         <style>
             :root {
+                interpolate-size: allow-keywords;
                 --bg: #0b0d12;
                 --card: #141821;
                 --fg: #e6e9ef;
@@ -320,6 +321,26 @@
                 margin: 0 0 16px;
                 color: var(--muted);
             }
+            /* Smooth open/close where supported (Chromium 131+);
+               degrades to the native instant toggle elsewhere. */
+            details::details-content {
+                height: 0;
+                overflow: hidden;
+                opacity: 0;
+                transition:
+                    height 0.25s ease,
+                    opacity 0.25s ease,
+                    content-visibility 0.25s allow-discrete;
+            }
+            details[open]::details-content {
+                height: auto;
+                opacity: 1;
+            }
+            @media (prefers-reduced-motion: reduce) {
+                details::details-content {
+                    transition: none;
+                }
+            }
             .final {
                 text-align: center;
                 padding: 64px 0;
@@ -338,6 +359,22 @@
                 .feature.rev .txt {
                     grid-template-columns: 1fr;
                     order: 0;
+                }
+                /* Stop the nav from overflowing the viewport on phones —
+                   the overflow is what made the centered hero look shifted.
+                   Keep only the primary CTA; the links live in the page. */
+                header {
+                    flex-wrap: wrap;
+                }
+                nav {
+                    gap: 16px;
+                }
+                nav a:not(.btn) {
+                    display: none;
+                }
+                /* Let the headline wrap naturally instead of a forced break. */
+                .hero h1 br {
+                    display: none;
                 }
             }
         </style>
@@ -447,10 +484,11 @@
                     <div class="txt">
                         <h3>Your data stays yours</h3>
                         <p>
-                            Bookmarks, reading streaks, read-state, and "not
-                            interested" all live on your device. The server
-                            can't tie a request to you — there's no account and
-                            no behavioral profile. Verify it: it's open source.
+                            Your source and tag choices, bookmarks, reading
+                            streaks, read-state, and "not interested" all live
+                            on your device. The server can't tie a request to
+                            you — there's no account and no behavioral profile.
+                            Verify it: it's open source.
                         </p>
                     </div>
                     <div class="fph">
@@ -467,11 +505,13 @@
                     <div class="txt">
                         <h3>Sync without an account — end-to-end encrypted</h3>
                         <p>
-                            Want your bookmarks on your laptop and desktop? Turn
-                            on sync and get a 12-word recovery phrase. Your data
-                            is encrypted on-device before it ever leaves; the
-                            server only stores ciphertext it can't read. No
-                            email, no login, ever.
+                            Want your feed on your laptop and desktop — and a
+                            safety net if you ever clear your browser? Turn on
+                            sync and get a 12-word recovery phrase. Your
+                            bookmarks and preferences are encrypted on-device
+                            before they ever leave; the server only stores
+                            ciphertext it can't read. Remember the phrase and you
+                            can restore on any device. No email, no login, ever.
                         </p>
                     </div>
                     <div class="fph">
@@ -612,6 +652,21 @@
                             <a href="https://github.com/ummahrican/yomi"
                                 >Get started on GitHub →</a
                             >
+                        </p>
+                    </details>
+                    <details>
+                        <summary>
+                            What if I clear my browser or switch computers?
+                        </summary>
+                        <p>
+                            Because everything lives on your device, clearing
+                            your browser data — or moving to a new computer —
+                            starts you fresh, unless you've turned on sync. With
+                            sync on, just enter your 12-word recovery phrase on
+                            the new browser and your bookmarks and preferences
+                            come right back. Keep that phrase somewhere safe:
+                            it's the only thing that can decrypt your data, so if
+                            you lose it, not even we can recover it.
                         </p>
                     </details>
                     <details>
