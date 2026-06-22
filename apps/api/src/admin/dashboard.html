@@ -8,60 +8,113 @@
       :root { color-scheme: dark; }
       * { box-sizing: border-box; }
       body { margin: 0; font-family: ui-sans-serif, system-ui, sans-serif; background: #0b0b0f; color: #e7e7ea; }
-      header { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid #26262e; position: sticky; top: 0; background: #0b0b0fcc; backdrop-filter: blur(6px); }
+      header { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid #26262e; position: sticky; top: 0; background: #0b0b0fcc; backdrop-filter: blur(6px); z-index: 5; }
       header .brand { font-weight: 700; }
       header .brand span { color: #10b981; }
-      main { max-width: 1000px; margin: 0 auto; padding: 20px; }
-      .tabs { display: flex; gap: 8px; margin-bottom: 18px; }
-      .tabs button { background: #18181f; color: #b7b7be; border: 1px solid #26262e; border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+      main { max-width: 1040px; margin: 0 auto; padding: 20px; }
+      a { color: #6ee7b7; }
+      .tabs { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+      .tabs button { background: #18181f; color: #b7b7be; border: 1px solid #26262e; border-radius: 8px; padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
       .tabs button.active { background: #10b981; color: #04130d; border-color: #10b981; }
-      input, textarea, button { font: inherit; }
-      input, textarea { width: 100%; background: #131319; border: 1px solid #2a2a33; color: #e7e7ea; border-radius: 8px; padding: 8px 10px; }
+      .tabs .count { background: #422006; color: #fcd34d; border-radius: 999px; font-size: 11px; font-weight: 700; padding: 0 7px; line-height: 18px; }
+      .tabs button.active .count { background: #04130d33; color: #04130d; }
+      input, textarea, select, button { font: inherit; }
+      input, textarea, select { width: 100%; background: #131319; border: 1px solid #2a2a33; color: #e7e7ea; border-radius: 8px; padding: 8px 10px; }
       label { display: block; font-size: 12px; color: #9a9aa3; margin: 8px 0 4px; }
       .btn { background: #10b981; color: #04130d; border: none; border-radius: 8px; padding: 8px 14px; font-weight: 600; cursor: pointer; }
       .btn.ghost { background: #18181f; color: #e7e7ea; border: 1px solid #2a2a33; }
       .btn.danger { background: #3a1620; color: #fca5a5; border: 1px solid #7f1d1d; }
       .btn.small { padding: 5px 9px; font-size: 13px; }
+      .btn:disabled { opacity: .5; cursor: default; }
       table { width: 100%; border-collapse: collapse; margin-top: 8px; }
       th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #1f1f27; font-size: 14px; vertical-align: top; }
       th { color: #8a8a93; font-weight: 600; font-size: 12px; text-transform: uppercase; }
+      tr.filter-row th { padding: 2px 8px 8px; }
+      input.col-filter { padding: 4px 7px; font-size: 12px; font-weight: 400; text-transform: none; background: #0f0f14; border-color: #23232b; }
       .muted { color: #8a8a93; font-size: 12px; }
+      .nowrap { white-space: nowrap; }
       .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
       .pill.approved { background: #064e3b; color: #6ee7b7; }
       .pill.pending { background: #422006; color: #fcd34d; }
       .pill.rejected { background: #3a1620; color: #fca5a5; }
+      .pill.paused { background: #27272f; color: #a1a1aa; }
+      .ok { color: #6ee7b7; }
+      .err { color: #fca5a5; }
       .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
       .card { background: #121218; border: 1px solid #23232b; border-radius: 12px; padding: 16px; margin-bottom: 18px; }
       .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
       #gate { max-width: 380px; margin: 80px auto; }
       .hidden { display: none; }
       h2 { font-size: 16px; margin: 0 0 10px; }
+      h2 .muted { font-weight: 400; }
+      /* Overview stat cards */
+      .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+      .stat { background: #121218; border: 1px solid #23232b; border-radius: 12px; padding: 14px 16px; }
+      .stat .k { font-size: 12px; color: #8a8a93; text-transform: uppercase; letter-spacing: .03em; }
+      .stat .v { font-size: 28px; font-weight: 700; margin: 4px 0 2px; }
+      .stat .sub { font-size: 12px; color: #9a9aa3; }
+      .stat.action { border-color: #7f1d1d55; }
+      .stat.action.zero { border-color: #23232b; }
+      .stat.action .v { color: #fca5a5; }
+      .stat.action.zero .v { color: #6ee7b7; }
+      .stat.clickable { cursor: pointer; }
+      .stat.clickable:hover { border-color: #10b981; }
+      .toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+      .toolbar .chip { background: #18181f; color: #b7b7be; border: 1px solid #26262e; border-radius: 999px; padding: 5px 12px; cursor: pointer; font-size: 13px; }
+      .toolbar .chip.active { background: #1f3a30; color: #6ee7b7; border-color: #10b981; }
+      .spacer { margin-left: auto; }
+      details.adder { margin-top: 6px; }
+      details.adder summary { cursor: pointer; color: #6ee7b7; font-size: 13px; }
+      .banner { background: #1a1410; border: 1px solid #7f1d1d55; color: #fcd34d; border-radius: 8px; padding: 8px 12px; font-size: 13px; margin-bottom: 12px; }
     </style>
   </head>
   <body>
     <header>
       <div class="brand"><span>●</span> Yomi Admin</div>
-      <div style="margin-left:auto" class="muted" id="status"></div>
+      <div style="margin-left:auto; display:flex; gap:12px; align-items:center">
+        <span class="muted" id="status"></span>
+        <button id="logoutBtn" class="btn ghost small hidden" onclick="logout()">Sign out</button>
+      </div>
     </header>
 
     <main>
       <div id="gate" class="card">
         <h2>Enter admin key</h2>
         <p class="muted">Your <code>ADMIN_API_KEY</code>. Stored only in this tab's session.</p>
-        <input id="key" type="password" placeholder="admin key" />
+        <input id="key" type="password" placeholder="admin key" onkeydown="if(event.key==='Enter')connect()" />
         <div style="margin-top:12px"><button class="btn" onclick="connect()">Connect</button></div>
         <p id="gateErr" class="muted" style="color:#fca5a5"></p>
       </div>
 
       <div id="app" class="hidden">
         <div class="tabs">
-          <button id="tab-campaigns" class="active" onclick="showTab('campaigns')">Campaigns</button>
-          <button id="tab-sources" onclick="showTab('sources')">Sources</button>
+          <button id="tab-overview" class="active" onclick="showTab('overview')">Overview</button>
+          <button id="tab-campaigns" onclick="showTab('campaigns')">Sponsors</button>
+          <button id="tab-sources" onclick="showTab('sources')">
+            Sources <span id="pendingBadge" class="count hidden"></span>
+          </button>
         </div>
 
-        <section id="view-campaigns">
+        <!-- ===================== OVERVIEW ===================== -->
+        <section id="view-overview">
+          <div class="toolbar">
+            <h2 style="margin:0">At a glance</h2>
+            <div class="spacer"></div>
+            <span class="muted" id="statsTime"></span>
+            <button class="btn ghost small" onclick="refreshStats(true)">Refresh</button>
+          </div>
+          <div id="stats" class="stats"></div>
+          <p class="muted" style="margin-top:14px">
+            Counts come only from data Yomi already stores — anonymous device activity, ingest
+            health, and ad delivery. Install/uninstall and review numbers live in the Chrome &amp;
+            Firefox store dashboards.
+          </p>
+        </section>
+
+        <!-- ===================== SPONSORS ===================== -->
+        <section id="view-campaigns" class="hidden">
           <div class="card">
-            <h2>New campaign</h2>
+            <h2 id="c-formTitle">New sponsored campaign</h2>
             <div class="grid">
               <div><label>Advertiser *</label><input id="c-advertiser" /></div>
               <div><label>Display source</label><input id="c-source" placeholder="defaults to advertiser" /></div>
@@ -74,31 +127,66 @@
             </div>
             <div class="grid">
               <div><label>Tags (comma sep)</label><input id="c-tags" placeholder="devtools, ci" /></div>
-              <div><label>Weight</label><input id="c-weight" type="number" value="1" min="1" /></div>
+              <div><label>Weight (higher = shown more)</label><input id="c-weight" type="number" value="1" min="1" /></div>
             </div>
             <div class="grid">
               <div><label>Starts at</label><input id="c-starts" type="datetime-local" /></div>
-              <div><label>Ends at</label><input id="c-ends" type="datetime-local" /></div>
+              <div><label>Ends at (blank = no end)</label><input id="c-ends" type="datetime-local" /></div>
             </div>
-            <div style="margin-top:12px"><button class="btn" onclick="createCampaign()">Create campaign</button></div>
+            <div style="margin-top:12px" class="row-actions">
+              <button class="btn" id="c-submit" onclick="saveCampaign()">Create campaign</button>
+              <button class="btn ghost hidden" id="c-cancel" onclick="cancelEdit()">Cancel edit</button>
+            </div>
             <p id="c-err" class="muted" style="color:#fca5a5"></p>
           </div>
 
           <div class="card">
-            <h2>Active & past campaigns</h2>
+            <h2>Campaigns</h2>
             <table>
-              <thead><tr><th>Advertiser</th><th>Title</th><th>Status</th><th>Impr.</th><th>Clicks</th><th>CTR</th><th></th></tr></thead>
+              <thead>
+                <tr><th>Advertiser</th><th>Title</th><th>Status</th><th>Schedule</th><th>Wt</th><th>Impr.</th><th>Clicks</th><th>CTR</th><th></th></tr>
+                <tr class="filter-row" id="campaign-filter-row"></tr>
+              </thead>
               <tbody id="campaigns-body"></tbody>
             </table>
           </div>
         </section>
 
+        <!-- ===================== SOURCES ===================== -->
         <section id="view-sources" class="hidden">
           <div class="card">
-            <h2>Community sources</h2>
-            <p class="muted">Pending feeds stay hidden until you approve them. "Demand" shows trust-weighted votes (from established devices) over raw votes — a big gap means bot/sybil voting.</p>
+            <h2>Community sources <span class="muted">— pending feeds stay hidden until you approve them</span></h2>
+            <p class="muted">"Demand" shows trust-weighted votes (from established devices) over raw votes — a big gap means bot/sybil voting. Approving a source publishes &amp; enables it for ingestion.</p>
+
+            <div class="toolbar">
+              <span class="chip active" id="flt-pending" onclick="setFilter('pending')">Pending</span>
+              <span class="chip" id="flt-approved" onclick="setFilter('approved')">Approved</span>
+              <span class="chip" id="flt-rejected" onclick="setFilter('rejected')">Rejected</span>
+              <span class="chip" id="flt-all" onclick="setFilter('all')">All</span>
+              <div class="spacer"></div>
+              <button class="btn ghost small" onclick="refreshSources()">Refresh</button>
+            </div>
+
+            <details class="adder">
+              <summary>+ Add a feed directly (skips voting, goes live immediately)</summary>
+              <div class="grid" style="margin-top:10px">
+                <div><label>Feed URL (RSS/Atom) *</label><input id="s-feed" placeholder="https://…/feed.xml" /></div>
+                <div><label>Name (optional)</label><input id="s-name" placeholder="auto from feed" /></div>
+              </div>
+              <div class="grid">
+                <div><label>Content type</label>
+                  <select id="s-type"><option value="article">article</option><option value="video">video</option></select>
+                </div>
+                <div style="display:flex; align-items:flex-end"><button class="btn" style="width:auto" onclick="addSource()">Validate &amp; add</button></div>
+              </div>
+              <p id="s-err" class="muted" style="color:#fca5a5"></p>
+            </details>
+
             <table>
-              <thead><tr><th>Name</th><th>Status</th><th>Demand (real / raw)</th><th>Health</th><th></th></tr></thead>
+              <thead>
+                <tr><th>Name</th><th>Feed</th><th>Status</th><th>Demand (real / raw)</th><th>Health</th><th></th></tr>
+                <tr class="filter-row" id="source-filter-row"></tr>
+              </thead>
               <tbody id="sources-body"></tbody>
             </table>
           </div>
@@ -109,50 +197,153 @@
     <script>
       const $ = (id) => document.getElementById(id);
       const key = () => sessionStorage.getItem("yomi_admin_key") || "";
-      async function api(path, opts = {}) {
-        const res = await fetch(path, {
-          ...opts,
-          headers: { "content-type": "application/json", "x-admin-key": key(), ...(opts.headers || {}) },
+      const fmt = (n) => Number(n || 0).toLocaleString();
+      const esc = (s) => (s == null ? "" : String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])));
+      const ctrOf = (impr, clicks) => (impr > 0 ? ((clicks / impr) * 100).toFixed(1) + "%" : "—");
+
+      // --- Generic per-column table filtering ---
+      // Each table declares columns with a `get(row)` returning that cell's
+      // searchable text. A column's filter input does a case-insensitive
+      // substring match; all active filters must pass (AND).
+      const colFilters = { source: {}, campaign: {} };
+      function passesColFilters(row, cols, which) {
+        const f = colFilters[which];
+        return cols.every((c) => {
+          const q = (f[c.key] || "").trim().toLowerCase();
+          return !q || String(c.get(row)).toLowerCase().includes(q);
         });
+      }
+      function setColFilter(which, k, v) {
+        colFilters[which][k] = v;
+        if (which === "source") renderSources(); else renderCampaigns();
+      }
+      // Builds the <input> filter row cells for a thead, given column keys.
+      function filterRow(which, keys) {
+        return keys
+          .map((k) => (k ? `<th><input class="col-filter" oninput="setColFilter('${which}','${k}',this.value)" placeholder="filter…" /></th>` : "<th></th>"))
+          .join("");
+      }
+
+      async function api(path, opts = {}) {
+        // Only declare a JSON content-type when we actually send a body. Setting
+        // it on a bodyless request (e.g. DELETE) makes Fastify reject the empty
+        // body with FST_ERR_CTP_EMPTY_JSON_BODY (400).
+        const headers = { "x-admin-key": key(), ...(opts.headers || {}) };
+        if (opts.body != null) headers["content-type"] = "application/json";
+        const res = await fetch(path, { ...opts, headers });
         if (res.status === 401) { logout(); throw new Error("unauthorized"); }
         if (!res.ok) throw new Error("HTTP " + res.status + ": " + (await res.text()));
         return res.status === 204 ? null : res.json();
       }
-      function logout() { sessionStorage.removeItem("yomi_admin_key"); $("app").classList.add("hidden"); $("gate").classList.remove("hidden"); }
+      function logout() {
+        sessionStorage.removeItem("yomi_admin_key");
+        $("app").classList.add("hidden"); $("gate").classList.remove("hidden");
+        $("logoutBtn").classList.add("hidden"); $("status").textContent = "";
+      }
       async function connect() {
         sessionStorage.setItem("yomi_admin_key", $("key").value.trim());
         try {
-          await api("/api/admin/sponsored");
+          await api("/api/admin/stats");
           $("gate").classList.add("hidden"); $("app").classList.remove("hidden");
+          $("logoutBtn").classList.remove("hidden");
           $("status").textContent = "connected";
-          refreshCampaigns(); refreshSources();
+          refreshAll();
         } catch (e) { $("gateErr").textContent = "Invalid key or server unreachable."; sessionStorage.removeItem("yomi_admin_key"); }
       }
       function showTab(t) {
-        for (const x of ["campaigns", "sources"]) {
+        for (const x of ["overview", "campaigns", "sources"]) {
           $("view-" + x).classList.toggle("hidden", x !== t);
           $("tab-" + x).classList.toggle("active", x === t);
         }
       }
-      const esc = (s) => (s == null ? "" : String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])));
+      let filtersBuilt = false;
+      function initFilterRows() {
+        if (filtersBuilt) return;
+        $("campaign-filter-row").innerHTML = filterRow("campaign", ["advertiser", "title", "status", "schedule", "weight", "impr", "clicks", "ctr", ""]);
+        $("source-filter-row").innerHTML = filterRow("source", ["name", "feed", "status", "demand", "health", ""]);
+        filtersBuilt = true;
+      }
+      function refreshAll() { initFilterRows(); refreshStats(); refreshCampaigns(); refreshSources(); }
+
+      function toLocalInput(iso) {
+        if (!iso) return "";
+        const d = new Date(iso); const p = (n) => String(n).padStart(2, "0");
+        return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+      }
+      const shortDate = (iso) => (iso ? new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : null);
+
+      // ===================== OVERVIEW =====================
+      async function refreshStats(fresh) {
+        let s;
+        try { s = await api("/api/admin/stats" + (fresh ? "?fresh=1" : "")); } catch (e) { return; }
+        const ctr = ctrOf(s.campaigns.impressions, s.campaigns.clicks);
+        const pendCls = s.sources.pending > 0 ? "" : "zero";
+        const errCls = s.sources.erroring > 0 ? "" : "zero";
+        $("stats").innerHTML = `
+          <div class="stat"><div class="k">Engaged devices (24h)</div><div class="v">${fmt(s.devices.dau)}</div><div class="sub">${fmt(s.devices.wau)} in 7d · ${fmt(s.devices.total)} all-time</div></div>
+          <div class="stat"><div class="k">Live campaigns</div><div class="v">${fmt(s.campaigns.live)}</div><div class="sub">${fmt(s.campaigns.active)} active · ${fmt(s.campaigns.total)} total</div></div>
+          <div class="stat"><div class="k">Ad delivery (lifetime)</div><div class="v">${fmt(s.campaigns.impressions)}</div><div class="sub">${fmt(s.campaigns.clicks)} clicks · ${ctr} CTR</div></div>
+          <div class="stat clickable action ${pendCls}" onclick="showTab('sources');setFilter('pending')"><div class="k">Pending sources</div><div class="v">${fmt(s.sources.pending)}</div><div class="sub">${s.sources.pending > 0 ? "awaiting your review →" : "queue clear"}</div></div>
+          <div class="stat action ${errCls}"><div class="k">Erroring feeds</div><div class="v">${fmt(s.sources.erroring)}</div><div class="sub">${s.sources.erroring > 0 ? "check Sources → Health" : "all healthy"}</div></div>
+          <div class="stat"><div class="k">Live sources</div><div class="v">${fmt(s.sources.enabled)}</div><div class="sub">${fmt(s.sources.approved)} approved · ${fmt(s.sources.rejected)} rejected</div></div>
+          <div class="stat"><div class="k">Articles</div><div class="v">${fmt(s.articles.total)}</div><div class="sub">+${fmt(s.articles.last24h)} in last 24h</div></div>
+        `;
+        $("statsTime").textContent = "updated " + new Date(s.generatedAt).toLocaleTimeString();
+        $("pendingBadge").textContent = s.sources.pending;
+        $("pendingBadge").classList.toggle("hidden", s.sources.pending === 0);
+      }
+
+      // ===================== SPONSORS =====================
+      let campaignsCache = [];
+      let editingId = null;
+
+      function campaignStatus(s) {
+        if (!s.active) return { label: "Paused", cls: "paused" };
+        const now = Date.now();
+        const start = s.startsAt ? Date.parse(s.startsAt) : 0;
+        const end = s.endsAt ? Date.parse(s.endsAt) : null;
+        if (start > now) return { label: "Scheduled", cls: "pending" };
+        if (end != null && end < now) return { label: "Ended", cls: "rejected" };
+        return { label: "Live", cls: "approved" };
+      }
+
+      const CAMPAIGN_COLS = [
+        { key: "advertiser", get: (s) => s.advertiser },
+        { key: "title", get: (s) => `${s.title} ${s.targetUrl}` },
+        { key: "status", get: (s) => campaignStatus(s).label },
+        { key: "schedule", get: (s) => `${shortDate(s.startsAt) || ""} ${shortDate(s.endsAt) || ""}` },
+        { key: "weight", get: (s) => String(s.weight) },
+        { key: "impr", get: (s) => String(s.impressions) },
+        { key: "clicks", get: (s) => String(s.clicks) },
+        { key: "ctr", get: (s) => ctrOf(s.impressions, s.clicks) },
+      ];
 
       async function refreshCampaigns() {
         const { items } = await api("/api/admin/sponsored");
+        campaignsCache = items;
+        renderCampaigns();
+      }
+      function renderCampaigns() {
+        const items = campaignsCache.filter((s) => passesColFilters(s, CAMPAIGN_COLS, "campaign"));
         $("campaigns-body").innerHTML = items.map((s) => {
-          const ctr = s.impressions > 0 ? ((s.clicks / s.impressions) * 100).toFixed(1) + "%" : "—";
+          const st = campaignStatus(s);
+          const sched = (shortDate(s.startsAt) || "—") + " → " + (shortDate(s.endsAt) || "∞");
           return `<tr>
             <td>${esc(s.advertiser)}</td>
-            <td>${esc(s.title)}<div class="muted">${esc(s.targetUrl)}</div></td>
-            <td><span class="pill ${s.active ? "approved" : "rejected"}">${s.active ? "active" : "paused"}</span></td>
-            <td>${s.impressions}</td><td>${s.clicks}</td><td>${ctr}</td>
+            <td>${esc(s.title)}<div class="muted"><a href="${esc(s.targetUrl)}" target="_blank" rel="noopener">${esc(s.targetUrl)}</a></div></td>
+            <td><span class="pill ${st.cls}">${st.label}</span></td>
+            <td class="muted nowrap">${sched}</td>
+            <td>${s.weight}</td>
+            <td>${fmt(s.impressions)}</td><td>${fmt(s.clicks)}</td><td>${ctrOf(s.impressions, s.clicks)}</td>
             <td class="row-actions">
+              <button class="btn ghost small" onclick="editCampaign(${s.id})">Edit</button>
               <button class="btn ghost small" onclick="toggleCampaign(${s.id}, ${!s.active})">${s.active ? "Pause" : "Resume"}</button>
               <button class="btn danger small" onclick="deleteCampaign(${s.id})">Delete</button>
             </td></tr>`;
-        }).join("") || `<tr><td colspan="7" class="muted">No campaigns yet.</td></tr>`;
+        }).join("") || `<tr><td colspan="9" class="muted">No campaigns ${campaignsCache.length ? "match the filters" : "yet"}.</td></tr>`;
       }
-      async function createCampaign() {
-        $("c-err").textContent = "";
+
+      function readCampaignForm() {
         const body = {
           advertiser: $("c-advertiser").value.trim(),
           title: $("c-title").value.trim(),
@@ -163,34 +354,143 @@
           tags: $("c-tags").value.split(",").map((t) => t.trim()).filter(Boolean),
           weight: Number($("c-weight").value) || 1,
         };
+        // Omit startsAt when blank: on create the server defaults it to now; on
+        // edit, omitting leaves it unchanged. endsAt sends null to clear it.
         const starts = $("c-starts").value, ends = $("c-ends").value;
         if (starts) body.startsAt = new Date(starts).toISOString();
-        if (ends) body.endsAt = new Date(ends).toISOString();
+        body.endsAt = ends ? new Date(ends).toISOString() : null;
+        return body;
+      }
+
+      async function saveCampaign() {
+        $("c-err").textContent = "";
+        const body = readCampaignForm();
         if (!body.advertiser || !body.title || !body.targetUrl) { $("c-err").textContent = "Advertiser, title and target URL are required."; return; }
         try {
-          await api("/api/admin/sponsored", { method: "POST", body: JSON.stringify(body) });
-          for (const id of ["c-advertiser","c-title","c-excerpt","c-url","c-image","c-source","c-tags"]) $(id).value = "";
-          refreshCampaigns();
+          if (editingId != null) {
+            await api("/api/admin/sponsored/" + editingId, { method: "PATCH", body: JSON.stringify(body) });
+          } else {
+            await api("/api/admin/sponsored", { method: "POST", body: JSON.stringify(body) });
+          }
+          cancelEdit();
+          refreshCampaigns(); refreshStats();
         } catch (e) { $("c-err").textContent = String(e.message); }
       }
-      async function toggleCampaign(id, active) { await api("/api/admin/sponsored/" + id, { method: "PATCH", body: JSON.stringify({ active }) }); refreshCampaigns(); }
-      async function deleteCampaign(id) { if (!confirm("Delete this campaign?")) return; await api("/api/admin/sponsored/" + id, { method: "DELETE" }); refreshCampaigns(); }
+
+      function editCampaign(id) {
+        const s = campaignsCache.find((c) => c.id === id);
+        if (!s) return;
+        editingId = id;
+        $("c-advertiser").value = s.advertiser || "";
+        $("c-title").value = s.title || "";
+        $("c-excerpt").value = s.excerpt || "";
+        $("c-url").value = s.targetUrl || "";
+        $("c-image").value = s.imageUrl || "";
+        $("c-source").value = s.displaySource || "";
+        $("c-tags").value = (s.tags || []).join(", ");
+        $("c-weight").value = s.weight || 1;
+        $("c-starts").value = toLocalInput(s.startsAt);
+        $("c-ends").value = toLocalInput(s.endsAt);
+        $("c-formTitle").textContent = "Edit campaign — " + s.advertiser;
+        $("c-submit").textContent = "Save changes";
+        $("c-cancel").classList.remove("hidden");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function cancelEdit() {
+        editingId = null;
+        for (const id of ["c-advertiser","c-title","c-excerpt","c-url","c-image","c-source","c-tags","c-starts","c-ends"]) $(id).value = "";
+        $("c-weight").value = 1;
+        $("c-formTitle").textContent = "New sponsored campaign";
+        $("c-submit").textContent = "Create campaign";
+        $("c-cancel").classList.add("hidden");
+        $("c-err").textContent = "";
+      }
+
+      async function toggleCampaign(id, active) { await api("/api/admin/sponsored/" + id, { method: "PATCH", body: JSON.stringify({ active }) }); refreshCampaigns(); refreshStats(); }
+      async function deleteCampaign(id) { if (!confirm("Delete this campaign?")) return; await api("/api/admin/sponsored/" + id, { method: "DELETE" }); if (editingId === id) cancelEdit(); refreshCampaigns(); refreshStats(); }
+
+      // ===================== SOURCES =====================
+      let sourcesCache = [];
+      let sourceFilter = "pending";
+
+      function setFilter(f) {
+        sourceFilter = f;
+        for (const x of ["pending","approved","rejected","all"]) $("flt-" + x).classList.toggle("active", x === f);
+        renderSources();
+      }
+
+      function healthCell(s) {
+        if ((s.consecutiveFailures || 0) > 0) {
+          const title = s.lastError ? ` title="${esc(s.lastError)}"` : "";
+          return `<span class="err"${title}>${s.consecutiveFailures} fail${s.consecutiveFailures > 1 ? "s" : ""}</span>`;
+        }
+        if (s.lastStatus === "ok") return `<span class="ok">ok</span><div class="muted">${shortDate(s.lastFetchedAt) || ""}</div>`;
+        if (s.lastStatus) return `<span class="muted">${esc(s.lastStatus)}</span>`;
+        return `<span class="muted">never fetched</span>`;
+      }
+
+      const SOURCE_COLS = [
+        { key: "name", get: (s) => `${s.name} ${s.slug} ${s.contentType || s.kind}` },
+        { key: "feed", get: (s) => `${s.feedUrl || ""} ${s.homepageUrl || ""}` },
+        { key: "status", get: (s) => s.status },
+        { key: "demand", get: (s) => `${s.weightedVotes ?? 0} ${s.votes}` },
+        { key: "health", get: (s) => `${s.consecutiveFailures || 0} ${s.lastStatus || ""} ${s.lastError || ""} ${s.enabled ? "live" : "disabled"}` },
+      ];
+
+      function renderSources() {
+        const items = sourcesCache.filter(
+          (s) => (sourceFilter === "all" || s.status === sourceFilter) && passesColFilters(s, SOURCE_COLS, "source"),
+        );
+        $("sources-body").innerHTML = items.map((s) => {
+          const feed = s.feedUrl ? `<a href="${esc(s.feedUrl)}" target="_blank" rel="noopener">feed</a>` : "<span class='muted'>—</span>";
+          const home = s.homepageUrl ? ` · <a href="${esc(s.homepageUrl)}" target="_blank" rel="noopener">site</a>` : "";
+          const live = s.status === "approved" ? (s.enabled ? " · <span class='ok'>live</span>" : " · <span class='muted'>disabled</span>") : "";
+          return `<tr>
+            <td>${esc(s.name)}<div class="muted">${esc(s.slug)} · ${esc(s.contentType || s.kind)}${live}</div></td>
+            <td class="nowrap">${feed}${home}</td>
+            <td><span class="pill ${esc(s.status)}">${esc(s.status)}</span></td>
+            <td><b>${s.weightedVotes ?? 0}</b> real / ${s.votes} raw</td>
+            <td>${healthCell(s)}</td>
+            <td class="row-actions">
+              ${s.status !== "approved" ? `<button class="btn small" onclick="setSource(${s.id},'approved')">Approve</button>` : ""}
+              ${s.status === "approved" ? `<button class="btn ghost small" onclick="setEnabled(${s.id}, ${!s.enabled})">${s.enabled ? "Disable" : "Enable"}</button>` : ""}
+              ${s.status !== "rejected" ? `<button class="btn ghost small" onclick="setSource(${s.id},'rejected')">Reject</button>` : ""}
+              <button class="btn danger small" onclick="deleteSource(${s.id})">Delete</button>
+            </td></tr>`;
+        }).join("") || `<tr><td colspan="6" class="muted">No ${sourceFilter === "all" ? "" : sourceFilter} sources.</td></tr>`;
+      }
 
       async function refreshSources() {
-        const { items, approveVotes } = await api("/api/admin/sources");
-        $("sources-body").innerHTML = items.map((s) => `<tr>
-          <td>${esc(s.name)}<div class="muted">${esc(s.slug)} · ${esc(s.kind)}</div></td>
-          <td><span class="pill ${esc(s.status)}">${esc(s.status)}</span></td>
-          <td title="suggested demand ≈ ${approveVotes}"><b>${s.weightedVotes ?? 0}</b> real / ${s.votes} raw</td>
-          <td class="muted">${esc(s.lastStatus || "—")}</td>
-          <td class="row-actions">
-            ${s.status !== "approved" ? `<button class="btn small" onclick="setSource(${s.id},'approved')">Approve</button>` : ""}
-            ${s.status !== "rejected" ? `<button class="btn ghost small" onclick="setSource(${s.id},'rejected')">Reject</button>` : ""}
-            <button class="btn danger small" onclick="deleteSource(${s.id})">Delete</button>
-          </td></tr>`).join("") || `<tr><td colspan="5" class="muted">No sources.</td></tr>`;
+        const { items } = await api("/api/admin/sources");
+        sourcesCache = items;
+        const pending = items.filter((s) => s.status === "pending").length;
+        $("pendingBadge").textContent = pending;
+        $("pendingBadge").classList.toggle("hidden", pending === 0);
+        renderSources();
       }
-      async function setSource(id, status) { await api("/api/admin/sources/" + id, { method: "PATCH", body: JSON.stringify({ status, enabled: status === "approved" }) }); refreshSources(); }
-      async function deleteSource(id) { if (!confirm("Delete this source and its votes?")) return; await api("/api/admin/sources/" + id, { method: "DELETE" }); refreshSources(); }
+      // Surface server errors instead of silently no-op'ing on a failed action.
+      async function sourceAction(fn) {
+        try { await fn(); refreshSources(); refreshStats(); }
+        catch (e) { alert("Action failed: " + (e && e.message ? e.message : e)); }
+      }
+      function setSource(id, status) { sourceAction(() => api("/api/admin/sources/" + id, { method: "PATCH", body: JSON.stringify({ status, enabled: status === "approved" }) })); }
+      function setEnabled(id, enabled) { sourceAction(() => api("/api/admin/sources/" + id, { method: "PATCH", body: JSON.stringify({ enabled }) })); }
+      function deleteSource(id) { if (!confirm("Delete this source and ALL its articles, votes & upvotes? This cannot be undone.")) return; sourceAction(() => api("/api/admin/sources/" + id, { method: "DELETE" })); }
+
+      async function addSource() {
+        $("s-err").textContent = "";
+        const feedUrl = $("s-feed").value.trim();
+        if (!feedUrl) { $("s-err").textContent = "Feed URL is required."; return; }
+        const body = { feedUrl, contentType: $("s-type").value };
+        const name = $("s-name").value.trim();
+        if (name) body.name = name;
+        try {
+          await api("/api/admin/sources", { method: "POST", body: JSON.stringify(body) });
+          $("s-feed").value = ""; $("s-name").value = "";
+          setFilter("approved"); refreshSources(); refreshStats();
+        } catch (e) { $("s-err").textContent = String(e.message); }
+      }
 
       if (key()) connect();
     </script>

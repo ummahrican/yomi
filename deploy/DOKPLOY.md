@@ -32,18 +32,27 @@ The most Dokploy-native option; gives you Dokploy's database backups.
    ```
    NODE_ENV=production
    DATABASE_URL=postgres://USER:PASSWORD@<dokploy-pg-host>:5432/DB   # from step 1
-   ADMIN_API_KEY=<openssl rand -hex 32>     # REQUIRED — boot fails on the default
+   ADMIN_API_KEY=<openssl rand -hex 32>     # REQUIRED — boot fails on default or <24 chars
+   TRUST_PROXY=true                         # Dokploy/Traefik fronts the API; see note below
    CORS_ORIGIN=*                            # correct: extension Origin is chrome-extension://
    GRAVITY=1.6
    SOURCE_APPROVE_VOTES=10
    INGEST_ENABLED=true
    INGEST_CONTACT_URL=https://github.com/ummahrican/yomi
+   # Optional — be the only one in the admin dashboard. Lock it to your IP(s):
+   # ADMIN_ALLOWED_IPS=203.0.113.5,198.51.100.20
    ```
-4. **Domain.** Application → _Domains_ → add `api.<yourdomain>`, container port
+   **Admin security.** The dashboard (`/admin`) is gated solely by `ADMIN_API_KEY`,
+   so treat it like a root password: generate it with `openssl rand -hex 32` and
+   never commit it. For extra lockdown set `ADMIN_ALLOWED_IPS` to a comma-separated
+   client-IP allowlist — anyone else gets `403` even with the key. Because Traefik
+   fronts the container, `TRUST_PROXY=true` is required for that allowlist (and the
+   per-IP brute-force throttle) to see the real client IP rather than the proxy's.
+4. **Domain.** Application → _Domains_ → add `api.yomi.fyi`, container port
    **3000**, enable HTTPS (Let's Encrypt). Point the DNS A record at the Dokploy
    host first so the cert can issue.
-5. **Deploy.** Hit Deploy. Verify: `curl https://api.<yourdomain>/health` →
-   `{"status":"ok",...}`. Admin dashboard at `https://api.<yourdomain>/admin`.
+5. **Deploy.** Hit Deploy. Verify: `curl https://api.yomi.fyi/health` →
+   `{"status":"ok",...}`. Admin dashboard at `https://api.yomi.fyi/admin`.
 
 ## Path B — Compose (single self-contained stack)
 
@@ -53,14 +62,14 @@ Use `docker-compose.dokploy.yml` if you'd rather keep Postgres inside the stack.
    `docker-compose.dokploy.yml`.
 2. Set the env vars (`POSTGRES_USER/PASSWORD/DB`, `ADMIN_API_KEY`,
    `INGEST_CONTACT_URL`, …) in the _Environment_ tab.
-3. _Domains_ → map `api.<yourdomain>` → service **api**, port **3000**, HTTPS on.
+3. _Domains_ → map `api.yomi.fyi` → service **api**, port **3000**, HTTPS on.
 4. Deploy; verify `/health` as above. For backups, either enable a Dokploy
    volume/DB backup or run `deploy/backup.sh` against the `db` container.
 
 ---
 
 ## After either path
-- Build + submit the extension with `VITE_API_BASE_URL=https://api.<yourdomain>`
+- Build + submit the extension with `VITE_API_BASE_URL=https://api.yomi.fyi`
   and tighten `host_permissions` to that origin (see PRODUCTION_READINESS P0.5).
 - Enable Dokploy's database backup schedule (Path A) or wire `deploy/backup.sh`
   (Path B) — and confirm backups land **off-box** (S3/R2), not just on the host.

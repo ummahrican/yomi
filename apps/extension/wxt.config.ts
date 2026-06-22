@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 // The extension calls the API at VITE_API_BASE_URL (baked in at build time) and
 // needs a matching host permission. Derive the host permission from the same
 // value so they can never drift. For a production store build, run e.g.
-//   VITE_API_BASE_URL=https://api.yourdomain pnpm zip:prod
+//   VITE_API_BASE_URL=https://api.yomi.fyi pnpm zip:prod
 // which bakes in the URL AND tightens host_permissions to that single origin.
 const API_BASE = process.env.VITE_API_BASE_URL || "http://localhost:3000";
 

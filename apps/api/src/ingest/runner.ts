@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, gte, sql } from "drizzle-orm";
 import pLimit from "p-limit";
 import { db } from "../db/client";
 import { sources, type SourceRow } from "../db/schema";
@@ -66,6 +66,37 @@ export async function ingestSource(source: SourceRow): Promise<{ slug: string; c
     console.warn(`[ingest] ${source.slug} failed: ${err instanceof Error ? err.message : err}`);
     return { slug: source.slug, count: 0, ok: false };
   }
+}
+
+/**
+ * Re-enable sources auto-disabled by consecutive failures, giving them a fresh
+ * chance. Disabled sources are never fetched again, so a *transient* upstream
+ * outage (YouTube serves intermittent 404/429 to bots) would otherwise kill a
+ * healthy feed forever. We only revive what the failure-cap disabled (approved +
+ * failures >= cap); a manual admin "Disable" sits below the cap and is left
+ * alone. If a feed is genuinely dead it'll just re-disable next cycle. Returns
+ * the number revived.
+ */
+export async function reviveAutoDisabled(): Promise<number> {
+  const revived = await db
+    .update(sources)
+    .set({ enabled: true, consecutiveFailures: 0, lastError: null })
+    .where(
+      and(
+        eq(sources.enabled, false),
+        eq(sources.status, "approved"),
+        gte(sources.consecutiveFailures, MAX_CONSECUTIVE_FAILURES),
+      ),
+    )
+    .returning({ slug: sources.slug });
+  if (revived.length > 0) {
+    console.log(
+      `[ingest] revived ${revived.length} auto-disabled source(s): ${revived
+        .map((r) => r.slug)
+        .join(", ")}`,
+    );
+  }
+  return revived.length;
 }
 
 /** Run one ingestion pass over all enabled sources of the given kinds. */

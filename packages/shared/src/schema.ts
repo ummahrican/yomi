@@ -113,6 +113,44 @@ export type SponsoredCreate = z.infer<typeof SponsoredCreateSchema>;
 export const SponsoredUpdateSchema = SponsoredCreateSchema.partial();
 export type SponsoredUpdate = z.infer<typeof SponsoredUpdateSchema>;
 
+// --- Admin: add a source directly (approved + enabled), reusing feed validation ---
+export const AdminSourceCreateSchema = z.object({
+  feedUrl: z.string().url(),
+  name: z.string().min(1).max(80).optional(),
+  homepageUrl: z.string().url().optional(),
+  contentType: z.enum(["article", "video"]).default("article"),
+});
+export type AdminSourceCreate = z.infer<typeof AdminSourceCreateSchema>;
+
+// --- Admin: at-a-glance overview, all derivable from data we already store ---
+export const AdminStatsSchema = z.object({
+  devices: z.object({
+    total: z.number(),
+    dau: z.number(), // active in the last 24h
+    wau: z.number(), // active in the last 7d
+  }),
+  articles: z.object({
+    total: z.number(),
+    last24h: z.number(), // ingested in the last 24h
+  }),
+  sources: z.object({
+    approved: z.number(),
+    pending: z.number(), // the actionable moderation queue
+    rejected: z.number(),
+    enabled: z.number(),
+    erroring: z.number(), // consecutive_failures > 0
+  }),
+  campaigns: z.object({
+    total: z.number(),
+    active: z.number(), // active flag on
+    live: z.number(), // active AND currently within its schedule window
+    impressions: z.number(),
+    clicks: z.number(),
+  }),
+  generatedAt: z.string(), // ISO 8601
+});
+export type AdminStats = z.infer<typeof AdminStatsSchema>;
+
 // --- Anonymous E2E sync ---
 export const SyncPullSchema = z.object({ authToken: z.string().min(16) });
 export const SyncPullResponseSchema = z.object({
@@ -157,6 +195,14 @@ export const SourceListItemSchema = z.object({
   weightedVotes: z.number().optional(),
   voted: z.boolean(), // has this device already voted?
   lastStatus: z.string().nullable(),
+  // --- Admin moderation view only (omitted on the public listing) ---
+  feedUrl: z.string().nullable().optional(),
+  enabled: z.boolean().optional(),
+  contentType: z.string().optional(), // 'article' | 'video'
+  consecutiveFailures: z.number().optional(),
+  lastError: z.string().nullable().optional(),
+  lastFetchedAt: z.string().nullable().optional(), // ISO 8601
+  createdAt: z.string().optional(), // ISO 8601
 });
 export type SourceListItem = z.infer<typeof SourceListItemSchema>;
 

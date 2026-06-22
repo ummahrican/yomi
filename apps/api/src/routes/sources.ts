@@ -3,13 +3,14 @@ import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import {
+  AdminSourceCreateSchema,
   SourceListItemSchema,
   SourceSubmitSchema,
   SourceVoteResponseSchema,
   SourcesResponseSchema,
 } from "@daily-alt/shared";
 import { db } from "../db/client";
-import { sources, sourceVotes, type SourceRow } from "../db/schema";
+import { articles, sources, sourceVotes, type SourceRow } from "../db/schema";
 import { env } from "../env";
 import { fetchFeedMeta } from "../ingest/rss";
 import { adminGuard } from "../lib/adminAuth";
@@ -228,6 +229,15 @@ export async function adminSourceRoutes(app: FastifyInstance) {
       const items = rows.map((r) => ({
         ...toListItem(r, false),
         weightedVotes: weights.get(r.id) ?? 0,
+        // Moderation context: where it pulls from, whether it's live, and its
+        // ingest health — so an admin can vet a feed and spot broken ones.
+        feedUrl: r.feedUrl,
+        enabled: r.enabled,
+        contentType: r.contentType,
+        consecutiveFailures: r.consecutiveFailures,
+        lastError: r.lastError,
+        lastFetchedAt: r.lastFetchedAt ? r.lastFetchedAt.toISOString() : null,
+        createdAt: r.createdAt.toISOString(),
       }));
       // Surface the actionable queue first: pending sources, ordered by real
       // (trust-weighted) demand, then raw votes; everything else after.
@@ -239,6 +249,60 @@ export async function adminSourceRoutes(app: FastifyInstance) {
         return b.votes - a.votes;
       });
       return { items, approveVotes: env.SOURCE_APPROVE_VOTES };
+    },
+  });
+
+  // Admin-added feed: skips the community vote/queue and goes live immediately.
+  // Useful for seeding quality sources at launch. Still validates the feed parses.
+  typed.route({
+    method: "POST",
+    url: "/api/admin/sources",
+    schema: {
+      body: AdminSourceCreateSchema,
+      response: {
+        201: SourceListItemSchema,
+        200: SourceListItemSchema,
+        400: z.object({ error: z.string() }),
+      },
+    },
+    handler: async (req, reply) => {
+      const { feedUrl, contentType } = req.body;
+
+      // Idempotent: if we already track this feed, just return it.
+      const [existing] = await db
+        .select()
+        .from(sources)
+        .where(eq(sources.feedUrl, feedUrl))
+        .limit(1);
+      if (existing) return reply.code(200).send(toListItem(existing, false));
+
+      let meta: Awaited<ReturnType<typeof fetchFeedMeta>>;
+      try {
+        meta = await fetchFeedMeta(feedUrl);
+      } catch {
+        return reply.code(400).send({ error: "Could not fetch or parse that feed URL." });
+      }
+
+      const name = (req.body.name ?? meta.title ?? new URL(feedUrl).hostname).trim().slice(0, 80);
+      const homepageUrl = req.body.homepageUrl ?? meta.link ?? new URL(feedUrl).origin;
+      const slug = await uniqueSlug(slugify(name));
+      const iconUrl = `https://www.google.com/s2/favicons?domain=${new URL(homepageUrl).hostname}&sz=64`;
+
+      const [row] = await db
+        .insert(sources)
+        .values({
+          slug,
+          name,
+          kind: "rss",
+          contentType,
+          feedUrl,
+          homepageUrl,
+          iconUrl,
+          status: "approved",
+          enabled: true,
+        })
+        .returning();
+      return reply.code(201).send(toListItem(row, false));
     },
   });
 
@@ -275,9 +339,19 @@ export async function adminSourceRoutes(app: FastifyInstance) {
       response: { 200: z.object({ ok: z.boolean() }) },
     },
     handler: async (req) => {
-      // Remove votes first (FK), then the source.
-      await db.delete(sourceVotes).where(eq(sourceVotes.sourceId, req.params.id));
-      await db.delete(sources).where(eq(sources.id, req.params.id));
+      const { id } = req.params;
+      // A source can't be deleted while rows still reference it. Tear down its
+      // dependents in FK order, then the source itself, atomically:
+      //   upvote_events -> articles -> source_votes -> sources
+      await db.transaction(async (tx) => {
+        await tx.execute(sql`
+          DELETE FROM upvote_events
+          WHERE article_id IN (SELECT id FROM articles WHERE source_id = ${id})
+        `);
+        await tx.delete(articles).where(eq(articles.sourceId, id));
+        await tx.delete(sourceVotes).where(eq(sourceVotes.sourceId, id));
+        await tx.delete(sources).where(eq(sources.id, id));
+      });
       return { ok: true };
     },
   });

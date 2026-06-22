@@ -36,6 +36,18 @@ const EnvSchema = z.object({
   INGEST_CONTACT_URL: z
     .string()
     .default("https://github.com/ummahrican/yomi"),
+  // Optional: lock the admin dashboard to specific client IPs (comma-separated).
+  // Empty = any client presenting a valid ADMIN_API_KEY (the normal case). When
+  // set behind a reverse proxy you MUST also set TRUST_PROXY=true, else every
+  // request looks like it comes from the proxy and you lock yourself out.
+  ADMIN_ALLOWED_IPS: z.string().default(""),
+  // Trust X-Forwarded-* from a front proxy (Traefik/Nginx/Dokploy) so req.ip is
+  // the real client. Enable ONLY when the API isn't directly reachable —
+  // otherwise clients can spoof their IP via the header.
+  TRUST_PROXY: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((v) => v === "true"),
 });
 
 export const env = EnvSchema.parse(process.env);
@@ -44,9 +56,19 @@ export type Env = typeof env;
 // Fail-fast in production rather than booting with a publicly-known admin key.
 // The admin dashboard (campaigns + source moderation) is gated solely by this
 // key, so a forgotten override would expose moderation to anyone.
-if (env.NODE_ENV === "production" && env.ADMIN_API_KEY === DEFAULT_ADMIN_KEY) {
-  throw new Error(
-    "Refusing to start: ADMIN_API_KEY is still the default 'change-me'. " +
-      "Set a strong, unique ADMIN_API_KEY (e.g. `openssl rand -hex 32`).",
-  );
+if (env.NODE_ENV === "production") {
+  if (env.ADMIN_API_KEY === DEFAULT_ADMIN_KEY) {
+    throw new Error(
+      "Refusing to start: ADMIN_API_KEY is still the default 'change-me'. " +
+        "Set a strong, unique ADMIN_API_KEY (e.g. `openssl rand -hex 32`).",
+    );
+  }
+  // A short key is brute-forceable; a 32-byte random key is not. Enforce a floor
+  // so a self-hoster can't accidentally ship a weak one.
+  if (env.ADMIN_API_KEY.length < 24) {
+    throw new Error(
+      "Refusing to start: ADMIN_API_KEY is too short for production. Use at least " +
+        "24 characters of randomness (e.g. `openssl rand -hex 32`).",
+    );
+  }
 }
