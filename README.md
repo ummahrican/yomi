@@ -106,13 +106,11 @@ Type checking via `tsc` is the source of truth today (`pnpm -r typecheck`). An E
 
 ### 🚀 Production deployment
 
-Deploy via [**Dokploy**](deploy/DOKPLOY.md) (recommended — Traefik handles TLS, managed Postgres handles backups) or any Docker host. Build store-ready extension packages with your API origin baked in (`host_permissions` auto-tightens to it):
+Deploy the API with `docker-compose.dokploy.yml` on Dokploy (Traefik handles TLS) or any Docker host — CI publishes the image to GHCR, so the host pulls rather than builds. Build store-ready extension packages with your API origin baked in (`host_permissions` auto-tightens to it):
 
 ```shell
 VITE_API_BASE_URL=https://api.yomi.fyi pnpm --filter @daily-alt/extension zip:prod
 ```
-
-The full prioritized checklist, a bare-VPS runbook, and store-submission requirements live in [`docs/PRODUCTION_READINESS.md`](docs/PRODUCTION_READINESS.md).
 
 ### 💾 Database
 
@@ -142,6 +140,10 @@ Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md). Open an 
 ## 🍕 Community
 
 Got questions or ideas? [Open an issue](https://github.com/ummahrican/yomi/issues) or start a [discussion](https://github.com/ummahrican/yomi/discussions).
+
+## ☕ Support
+
+Yomi is free, open source, and tracker-free — there's no paywall and no ads in the extension. If it earns a spot on your new tab, you can keep it going on [**Ko-fi**](https://ko-fi.com/ummahrican). Entirely optional, always appreciated.
 
 ## ⚖️ LICENSE
 

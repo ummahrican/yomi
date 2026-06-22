@@ -1,7 +1,6 @@
 name: Deploy site to GitHub Pages
 
-# Publishes ONLY the site/ folder (landing + privacy policy). The internal
-# docs/ folder (audit, distribution plan) is intentionally NOT published.
+# Publishes ONLY the site/ folder (landing + privacy policy).
 #
 # One-time setup: repo Settings → Pages → Source = "GitHub Actions".
 on:

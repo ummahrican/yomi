@@ -17,7 +17,7 @@ If a change would require tracking users or weakening the on-device/E2E model, i
 - **Report a bug** or **request a feature** via the [issue templates](https://github.com/ummahrican/yomi/issues/new/choose).
 - **Suggest a source** — the easiest path is the in-app **Settings → suggest a source** flow (community-voted). For curated/default sources, edit `apps/api/src/ingest/sources.seed.ts` and open a PR.
 - **Fix a bug or build a feature** — look for issues labeled `good first issue` or `help wanted`.
-- **Improve docs** — README, `docs/`, code comments.
+- **Improve docs** — README, code comments.
 
 ## 🛠️ Development setup
 

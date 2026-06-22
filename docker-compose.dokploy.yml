@@ -24,9 +24,10 @@ services:
       retries: 10
 
   api:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
+    # Prebuilt image published by .github/workflows/publish-api.yml — the VPS pulls,
+    # it never builds. Override API_IMAGE to pin a tag for rollback, e.g.
+    # API_IMAGE=ghcr.io/ummahrican/yomi/api:sha-abc1234
+    image: ${API_IMAGE:-ghcr.io/ummahrican/yomi/api:latest}
     restart: unless-stopped
     depends_on:
       db:
@@ -37,6 +38,12 @@ services:
       PORT: 3000
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       ADMIN_API_KEY: ${ADMIN_API_KEY}
+      # Traefik (Dokploy) terminates TLS in front of the API, so trust its
+      # X-Forwarded-* headers — required for the admin IP allowlist + brute-force
+      # throttle to see the real client IP instead of the proxy's.
+      TRUST_PROXY: ${TRUST_PROXY:-true}
+      # Optional: comma-separated client-IP allowlist for /admin (empty = key only).
+      ADMIN_ALLOWED_IPS: ${ADMIN_ALLOWED_IPS:-}
       CORS_ORIGIN: ${CORS_ORIGIN:-*}
       GRAVITY: ${GRAVITY:-1.6}
       SOURCE_APPROVE_VOTES: ${SOURCE_APPROVE_VOTES:-10}
