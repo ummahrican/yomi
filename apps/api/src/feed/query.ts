@@ -118,7 +118,10 @@ export async function queryOrganic(opts: QueryOpts): Promise<OrganicRow[]> {
       WHERE ${whereSql}
     )
     SELECT * FROM scored
-    ORDER BY score * power(0.6, src_rank - 1) * ${boost} * ${hnWeight} DESC, id DESC
+    -- Clamp the decay exponent: 0.6^(src_rank-1) underflows float8 (error 22003)
+    -- once a single source has >~1389 rows in the window. By rank 700 the term is
+    -- ~1e-155 — already negligible — so capping it changes ordering not at all.
+    ORDER BY score * power(0.6, LEAST(src_rank - 1, 700)) * ${boost} * ${hnWeight} DESC, id DESC
     LIMIT ${opts.limit} OFFSET ${opts.offset}
   `);
 

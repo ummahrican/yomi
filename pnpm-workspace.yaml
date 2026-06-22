@@ -7,6 +7,15 @@ packages:
 # (it imports the "vite/internal" subpath that only exists in Vite 7+).
 overrides:
   "@vitejs/plugin-react": "^4.4.1"
+  # Security: pin transitive deps to patched versions to clear Dependabot
+  # advisories. These are pulled in by build tooling (wxt/web-ext-run for the
+  # extension) and cheerio (undici, in the API), not by our own code paths.
+  undici: "^7.28.0" # cheerio's fetch client; patched WebSocket DoS, SOCKS5, Set-Cookie issues
+  tar: "^7.5.16" # via wxt>giget; patched path-traversal / symlink advisories
+  tmp: "^0.2.7" # via web-ext-run; path traversal
+  shell-quote: "^1.8.4" # via fx-runner; quote() newline escaping (critical)
+  uuid: "^11.1.0" # via node-notifier; v3/v5/v6 buffer bounds check
+  esbuild: "^0.25.10" # dev-server CORS (vite 6 already wants ^0.25.0)
 
 # pnpm records dependency build-script approval here. We explicitly do NOT run
 # these: esbuild ships prebuilt binaries via its platform-specific optional deps
