@@ -23,6 +23,11 @@ const EnvSchema = z.object({
     .default("true")
     .transform((v) => v === "true"),
   GRAVITY: z.coerce.number().default(1.6),
+  // Hacker News is a high-volume aggregator with strong engagement scores, so
+  // without a handicap it floods the ranked feed and buries individual blogs.
+  // This multiplier (0..1) down-weights HN's ranking score so it interleaves
+  // rather than dominates. 1 = no handicap; lower = rarer. Tune to taste.
+  HN_RANK_WEIGHT: z.coerce.number().min(0).max(1).default(0.5),
   // Community sources never auto-publish — an admin approves them. This is a
   // "suggested demand" hint shown in the dashboard/extension (votes / this), to
   // help admins prioritize the moderation queue. Not a gate.

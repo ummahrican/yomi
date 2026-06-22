@@ -174,7 +174,8 @@ export function SettingsDrawer(props: Props) {
 
         <Section title="Community sources">
           <p className="mb-2 text-sm text-zinc-500 dark:text-zinc-400">
-            Suggest an RSS/Atom feed. Once it reaches {sources.approveVotes} votes it goes live for everyone.
+            Suggest an RSS/Atom feed. Votes promote it for review — a maintainer approves popular
+            suggestions before they go live for everyone.
           </p>
           <div className="flex gap-2">
             <input

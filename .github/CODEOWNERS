@@ -1,0 +1,8 @@
+# Code owners are automatically requested for review on any PR that touches
+# matching paths. Combined with branch protection ("Require review from Code
+# Owners") this ensures every change to main is reviewed by a maintainer.
+#
+# https://docs.github.com/articles/about-code-owners
+
+# Default owner for everything in the repo.
+*       @ummahrican

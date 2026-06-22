@@ -3,7 +3,9 @@ import { fetchJson } from "../lib/http";
 import { clampDate, normalizeTags, type NormalizedItem } from "./normalize";
 
 const BASE = "https://hacker-news.firebaseio.com/v0";
-const STORY_LIMIT = 150;
+// Keep this modest: HN is one source among many and the feed down-weights it
+// (HN_RANK_WEIGHT) so it doesn't flood. Pulling the very top stories is plenty.
+const STORY_LIMIT = 60;
 
 interface HnItem {
   id: number;
