@@ -28,6 +28,9 @@ services:
     # it never builds. Override API_IMAGE to pin a tag for rollback, e.g.
     # API_IMAGE=ghcr.io/ummahrican/yomi/api:sha-abc1234
     image: ${API_IMAGE:-ghcr.io/ummahrican/yomi/api:latest}
+    # Always re-pull on (re)deploy so a freshly published :latest/SHA actually
+    # lands — `up` alone reuses the cached image and silently runs stale code.
+    pull_policy: always
     restart: unless-stopped
     depends_on:
       db:
