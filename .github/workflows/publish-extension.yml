@@ -1,0 +1,78 @@
+name: Publish extension (web stores)
+
+# Builds the extension and submits it to the Chrome Web Store, Firefox Add-ons,
+# and Edge Add-ons using WXT's built-in `wxt submit` (wraps publish-browser-extension).
+#
+# Trigger: push a tag like `v0.2.0` (matches the API workflow's release convention),
+# or run manually from the Actions tab (workflow_dispatch) to dry-run / re-publish.
+#
+# One-time setup — add these repo secrets (Settings → Secrets and variables → Actions).
+# Run `pnpm --filter @daily-alt/extension exec wxt submit init` locally to obtain them:
+#   Chrome:  CHROME_EXTENSION_ID, CHROME_CLIENT_ID, CHROME_CLIENT_SECRET, CHROME_REFRESH_TOKEN
+#   Firefox: FIREFOX_EXTENSION_ID, FIREFOX_JWT_ISSUER, FIREFOX_JWT_SECRET
+# You can ship to a subset — delete the store flags below for any you don't publish to.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Build + validate but do not actually submit'
+        type: boolean
+        default: false
+
+concurrency:
+  group: publish-extension-${{ github.ref }}
+  cancel-in-progress: false # never cancel a half-finished store upload
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.3.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build + zip (Chromium + Firefox, incl. Firefox sources)
+        env:
+          VITE_API_BASE_URL: https://api.yomi.fyi
+        run: |
+          pnpm --filter @daily-alt/extension zip
+          pnpm --filter @daily-alt/extension zip:firefox
+
+      - name: Submit to web stores
+        if: ${{ !inputs.dry_run }}
+        working-directory: apps/extension
+        env:
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+        run: |
+          pnpm exec wxt submit \
+            --chrome-zip .output/*-chrome.zip \
+            --firefox-zip .output/*-firefox.zip \
+            --firefox-sources-zip .output/*-sources.zip
+
+      - name: Upload built zips as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-zips-${{ github.ref_name }}
+          path: apps/extension/.output/*.zip
+          if-no-files-found: error

@@ -65,6 +65,17 @@ export function stripHtml(html: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Decode HTML entities in feed-provided plain text such as titles. Feeds escape
+ * titles (e.g. `007 First Light&#8217;s` for `007 First Light's`); unlike
+ * excerpts, titles don't pass through stripHtml, so they'd render the raw
+ * entity. cheerio's .text() decodes named/numeric entities and drops any stray
+ * markup without mangling literal text.
+ */
+export function decodeEntities(s: string): string {
+  return cheerio.load(s).text();
+}
+
 /** Build a short excerpt from possibly-HTML content, truncated on a word boundary. */
 export function makeExcerpt(content: string | undefined | null, max = 220): string | null {
   if (!content) return null;
@@ -124,7 +135,7 @@ export async function upsertArticles(
       sourceId,
       canonicalUrl: canonicalizeUrl(it.url),
       urlHash: hash,
-      title: it.title.trim().slice(0, 500),
+      title: decodeEntities(it.title).trim().slice(0, 500),
       excerpt: it.excerpt,
       author: it.author,
       imageUrl: cleanImageUrl(it.imageUrl),
@@ -156,6 +167,9 @@ export async function upsertArticles(
     .onConflictDoUpdate({
       target: articles.urlHash,
       set: {
+        // Refresh the title from the feed so corrected/decoded titles replace
+        // any previously-stored raw-entity versions on the next ingest.
+        title: sql`EXCLUDED.title`,
         // Merge popularity signals: keep the strongest we've seen.
         externalScore: sql`GREATEST(${articles.externalScore}, EXCLUDED.external_score)`,
         externalComments: sql`GREATEST(${articles.externalComments}, EXCLUDED.external_comments)`,

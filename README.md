@@ -12,6 +12,11 @@
   <img src="https://img.shields.io/github/last-commit/ummahrican/yomi" alt="Last commit">
 </p>
 
+<p align="center">
+  <a href="https://chromewebstore.google.com/detail/yomi-%E2%80%94-latest-in-tech-on/nnndnjginfbedcgielmpfnkecbmipacf"><img src="https://img.shields.io/badge/Add%20to%20Chrome-4285F4?logo=googlechrome&logoColor=white" alt="Add to Chrome"></a>
+  <a href="https://addons.mozilla.org/en-US/firefox/addon/yomi/"><img src="https://img.shields.io/badge/Add%20to%20Firefox-FF7139?logo=firefoxbrowser&logoColor=white" alt="Add to Firefox"></a>
+</p>
+
 <div align="center">
   <img src="docs/demo.gif" alt="Yomi demo — a ranked tech feed on every new tab" width="100%">
 </div>
