@@ -252,7 +252,7 @@ export function ArticleCard(props: Props) {
             {metaEl}
             <span className="ml-auto">{menuEl}</span>
           </div>
-          <h3 className="line-clamp-2 font-bold leading-snug text-zinc-900 dark:text-zinc-50">{item.title}</h3>
+          <h3 className="line-clamp-2 text-lg font-bold leading-snug text-zinc-900 dark:text-zinc-50">{item.title}</h3>
           {tagsEl}
           {actionsEl}
         </div>
@@ -274,7 +274,7 @@ export function ArticleCard(props: Props) {
           <span className="min-w-0 flex-1 truncate text-sm text-zinc-500 dark:text-zinc-400">{sourceNameEl}</span>
           <span className="opacity-0 transition group-hover:opacity-100">{menuEl}</span>
         </header>
-        <h3 className="mt-2 line-clamp-3 break-words font-bold text-zinc-900 dark:text-zinc-50">{item.title}</h3>
+        <h3 className="mt-2 line-clamp-3 break-words text-xl font-bold leading-snug text-zinc-900 dark:text-zinc-50">{item.title}</h3>
       </div>
 
       <div className="flex-1" />
