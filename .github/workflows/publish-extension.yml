@@ -53,8 +53,10 @@ jobs:
           pnpm --filter @daily-alt/extension zip
           pnpm --filter @daily-alt/extension zip:firefox
 
+      # dry_run appends --dry-run, which authenticates against each store and
+      # validates the zips WITHOUT uploading or submitting for review. On a tag
+      # push (no inputs), the flag is empty and this performs the real submit.
       - name: Submit to web stores
-        if: ${{ !inputs.dry_run }}
         working-directory: apps/extension
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
@@ -68,11 +70,15 @@ jobs:
           pnpm exec wxt submit \
             --chrome-zip .output/*-chrome.zip \
             --firefox-zip .output/*-firefox.zip \
-            --firefox-sources-zip .output/*-sources.zip
+            --firefox-sources-zip .output/*-sources.zip \
+            ${{ inputs.dry_run && '--dry-run' || '' }}
 
+      # .output is a dot-directory; upload-artifact@v4 excludes hidden files by
+      # default, so include-hidden-files is required or the glob matches nothing.
       - name: Upload built zips as artifacts
         uses: actions/upload-artifact@v4
         with:
           name: extension-zips-${{ github.ref_name }}
           path: apps/extension/.output/*.zip
           if-no-files-found: error
+          include-hidden-files: true
