@@ -21,6 +21,14 @@ on:
         description: 'Build + validate but do not actually submit'
         type: boolean
         default: false
+      stores:
+        description: 'Which stores to submit to (tag pushes always do both)'
+        type: choice
+        options:
+          - both
+          - chrome
+          - firefox
+        default: both
 
 concurrency:
   group: publish-extension-${{ github.ref }}
@@ -55,7 +63,10 @@ jobs:
 
       # dry_run appends --dry-run, which authenticates against each store and
       # validates the zips WITHOUT uploading or submitting for review. On a tag
-      # push (no inputs), the flag is empty and this performs the real submit.
+      # push (no inputs), dry-run is off and stores defaults to "both" — the
+      # real submit to Chrome + Firefox. The "stores" dispatch input lets you
+      # retry a single store (e.g. Chrome-only) without re-submitting a version
+      # the other store already accepted.
       - name: Submit to web stores
         working-directory: apps/extension
         env:
@@ -67,11 +78,17 @@ jobs:
           FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
           FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
         run: |
-          pnpm exec wxt submit \
-            --chrome-zip .output/*-chrome.zip \
-            --firefox-zip .output/*-firefox.zip \
-            --firefox-sources-zip .output/*-sources.zip \
-            ${{ inputs.dry_run && '--dry-run' || '' }}
+          STORES="${{ inputs.stores || 'both' }}"
+          DRY="${{ inputs.dry_run && '--dry-run' || '' }}"
+          ARGS=()
+          case "$STORES" in
+            both|chrome)  ARGS+=(--chrome-zip .output/*-chrome.zip) ;;
+          esac
+          case "$STORES" in
+            both|firefox) ARGS+=(--firefox-zip .output/*-firefox.zip --firefox-sources-zip .output/*-sources.zip) ;;
+          esac
+          echo "Submitting to: $STORES  (dry-run: ${DRY:-no})"
+          pnpm exec wxt submit "${ARGS[@]}" $DRY
 
       # .output is a dot-directory; upload-artifact@v4 excludes hidden files by
       # default, so include-hidden-files is required or the glob matches nothing.

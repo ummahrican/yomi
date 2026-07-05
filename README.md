@@ -111,7 +111,40 @@ Type checking via `tsc` is the source of truth today (`pnpm -r typecheck`). An E
 
 ### 🚀 Production deployment
 
-Deploy the API with `docker-compose.dokploy.yml` on Dokploy (Traefik handles TLS) or any Docker host — CI publishes the image to GHCR, so the host pulls rather than builds. Build store-ready extension packages with your API origin baked in (`host_permissions` auto-tightens to it):
+Everything ships through GitHub Actions — no manual uploads. Four workflows cover the whole stack:
+
+| Workflow | Triggers on | What it does |
+| --- | --- | --- |
+| `ci.yml` | every push / PR | Typecheck + build all packages; build both extension zips |
+| `publish-api.yml` | push to `main`, `v*` tags | Build the API image and push to GHCR (`ghcr.io/ummahrican/yomi/api`) tagged `latest`, `<short-sha>`, and semver — the host pulls rather than builds |
+| `pages.yml` | push to `main` touching `site/**` | Deploy the landing + privacy site to GitHub Pages |
+| `publish-extension.yml` | `v*` tags (or manual dispatch) | Build store-ready zips (API origin baked in) and submit to the Chrome Web Store + Firefox Add-ons via `wxt submit` |
+
+**API host** — deploy with `docker-compose.dokploy.yml` on Dokploy (Traefik handles TLS) or any Docker host. Since CI publishes the image to GHCR, point the host at the registry and let it pull. The GHCR package is private by default: make it public, or give the host a `read:packages` pull credential.
+
+**Cutting an extension release:**
+
+1. Bump `version` in `apps/extension/package.json` (both stores reject a version that's already live).
+2. Commit, then tag and push:
+   ```shell
+   git tag v0.1.2 && git push --tags
+   ```
+3. The tag triggers `publish-extension.yml`, which submits to **both** stores. Track it under the Actions tab.
+
+Prefer to validate first? Actions → **Publish extension** → *Run workflow* with `dry_run: true` authenticates against both stores and checks the zips **without** uploading. If a release partially fails (one store accepts, the other rejects), retry only the failed store so the successful one isn't re-submitted as a duplicate:
+
+```shell
+gh workflow run publish-extension.yml --ref main -f stores=chrome    # or firefox
+```
+
+**One-time secrets** (repo → Settings → Secrets and variables → Actions) — obtain them via `pnpm --filter @daily-alt/extension exec wxt submit init`:
+
+- Chrome: `CHROME_EXTENSION_ID`, `CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`, `CHROME_REFRESH_TOKEN`
+- Firefox: `FIREFOX_EXTENSION_ID`, `FIREFOX_JWT_ISSUER`, `FIREFOX_JWT_SECRET`
+
+> `CHROME_EXTENSION_ID` is the ID from your **Web Store developer dashboard** listing — not an ID copied from an installed extension. A wrong ID still authenticates, then 403s on upload. The Chrome API client should be an OAuth **Desktop app**, and the refresh token must be generated under the Google account that **owns the listing**.
+
+To build a store-ready package locally (e.g. for a manual first submission), bake your API origin in — `host_permissions` auto-tightens to it:
 
 ```shell
 VITE_API_BASE_URL=https://api.yomi.fyi pnpm --filter @daily-alt/extension zip:prod
