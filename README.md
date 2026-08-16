@@ -17,6 +17,7 @@
   <a href="https://addons.mozilla.org/en-US/firefox/addon/yomi/"><img src="https://img.shields.io/badge/Add%20to%20Firefox-FF7139?logo=firefoxbrowser&logoColor=white" alt="Add to Firefox"></a>
 </p>
 
+
 <div align="center">
   <img src="docs/demo.gif" alt="Yomi demo — a ranked tech feed on every new tab" width="100%">
 </div>
