@@ -32,6 +32,7 @@ export async function articleRoutes(app: FastifyInstance) {
           commentsUrl: articles.commentsUrl,
           sourceSlug: sources.slug,
           sourceName: sources.name,
+          siteName: articles.siteName,
           sourceIcon: sources.iconUrl,
         })
         .from(articles)
@@ -46,7 +47,7 @@ export async function articleRoutes(app: FastifyInstance) {
         id: row.id,
         title: row.title,
         url: row.url,
-        source: { slug: row.sourceSlug, name: row.sourceName, iconUrl: row.sourceIcon },
+        source: { slug: row.sourceSlug, name: row.siteName ?? row.sourceName, iconUrl: row.sourceIcon },
         imageUrl: row.imageUrl,
         excerpt: row.excerpt,
         author: row.author,

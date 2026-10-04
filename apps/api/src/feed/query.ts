@@ -53,6 +53,7 @@ interface RawRow {
   comments_url: string | null;
   source_slug: string;
   source_name: string;
+  display_name: string;
   source_icon: string | null;
   score: number;
 }
@@ -109,6 +110,7 @@ export async function queryOrganic(opts: QueryOpts): Promise<OrganicRow[]> {
         a.id, a.title, a.canonical_url, a.image_url, a.excerpt, a.author,
         a.tags, a.published_at, a.upvotes, a.external_comments,
         a.format, a.reading_minutes, a.comments_url,
+        COALESCE(a.site_name, s.name) AS display_name,
         s.slug AS source_slug, s.name AS source_name, s.icon_url AS source_icon,
         s.kind AS source_kind,
         ${score} AS score,
@@ -131,7 +133,7 @@ export async function queryOrganic(opts: QueryOpts): Promise<OrganicRow[]> {
     id: Number(r.id),
     title: r.title,
     url: r.canonical_url,
-    source: { slug: r.source_slug, name: r.source_name, iconUrl: r.source_icon },
+    source: { slug: r.source_slug, name: r.display_name, iconUrl: r.source_icon },
     imageUrl: r.image_url,
     excerpt: r.excerpt,
     author: r.author,

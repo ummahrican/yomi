@@ -84,6 +84,7 @@ export const articles = pgTable(
     format: text("format").notNull().default("article"), // 'article' | 'video'
     readingMinutes: integer("reading_minutes"),
     commentsUrl: text("comments_url"),
+    siteName: text("site_name"),
     lang: text("lang").default("en"),
     // NOTE: a generated `tsv` tsvector column + GIN indexes (tags, tsv) are
     // created via the hand-written SQL migration (Drizzle can't express
