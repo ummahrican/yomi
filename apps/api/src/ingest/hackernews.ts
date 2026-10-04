@@ -1,6 +1,11 @@
 import pLimit from "p-limit";
 import { fetchJson } from "../lib/http";
+import { db } from "../db/client";
+import { inArray } from "drizzle-orm";
+import { articles } from "../db/schema";
+import { urlHash } from "../lib/canonicalUrl";
 import { clampDate, normalizeTags, type NormalizedItem } from "./normalize";
+import { fetchPageMeta, hostLabel } from "./pageMeta";
 
 const BASE = "https://hacker-news.firebaseio.com/v0";
 // Keep this modest: HN is one source among many and the feed down-weights it
@@ -37,18 +42,43 @@ export async function fetchHackerNews(): Promise<NormalizedItem[]> {
     ),
   );
 
-  return items
-    .filter((it): it is HnItem => !!it && it.type === "story" && !!it.url && !!it.title)
-    .map((it): NormalizedItem => ({
-      url: it.url!,
-      title: it.title!,
-      excerpt: null,
-      author: it.by ?? null,
-      imageUrl: null,
-      tags: normalizeTags(["hackernews"]),
-      publishedAt: clampDate(it.time ? new Date(it.time * 1000) : null, now),
-      externalScore: it.score ?? 0,
-      externalComments: it.descendants ?? 0,
-      commentsUrl: `https://news.ycombinator.com/item?id=${it.id}`,
-    }));
+  const stories = items.filter(
+    (it): it is HnItem => !!it && it.type === "story" && !!it.url && !!it.title,
+  );
+
+  // Already-enriched stories don't need their destination re-fetched every cycle.
+  const hashes = stories.map((it) => urlHash(it.url!));
+  const known = new Set(
+    (
+      await db
+        .select({ h: articles.urlHash, site: articles.siteName })
+        .from(articles)
+        .where(inArray(articles.urlHash, hashes))
+    )
+      .filter((r) => r.site)
+      .map((r) => r.h),
+  );
+
+  // Follow each link to the real page for its image, description and site name.
+  const metaLimit = pLimit(8);
+  return Promise.all(
+    stories.map((it) =>
+      metaLimit(async (): Promise<NormalizedItem> => {
+        const meta = known.has(urlHash(it.url!)) ? null : await fetchPageMeta(it.url!);
+        return {
+          url: it.url!,
+          title: it.title!,
+          excerpt: meta?.excerpt ?? null,
+          author: meta?.author ?? it.by ?? null,
+          imageUrl: meta?.imageUrl ?? null,
+          tags: normalizeTags(["hackernews"]),
+          publishedAt: clampDate(it.time ? new Date(it.time * 1000) : null, now),
+          externalScore: it.score ?? 0,
+          externalComments: it.descendants ?? 0,
+          commentsUrl: `https://news.ycombinator.com/item?id=${it.id}`,
+          siteName: meta?.siteName ?? hostLabel(it.url!),
+        };
+      }),
+    ),
+  );
 }
