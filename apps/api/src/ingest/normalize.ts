@@ -18,6 +18,8 @@ export interface NormalizedItem {
   format?: "article" | "video";
   readingMinutes?: number | null;
   commentsUrl?: string | null;
+  /** Destination site name for aggregator items (e.g. Hacker News links). */
+  siteName?: string | null;
 }
 
 /** Rough read-time in minutes from (possibly HTML) content at ~200 wpm. */
@@ -146,6 +148,7 @@ export async function upsertArticles(
       format: it.format ?? "article",
       readingMinutes: it.readingMinutes ?? null,
       commentsUrl: it.commentsUrl ?? null,
+      siteName: it.siteName ?? null,
     };
     // Keep the strongest popularity signal if the URL appears twice.
     if (!existing) byHash.set(hash, row);
@@ -155,6 +158,7 @@ export async function upsertArticles(
       existing.imageUrl ??= row.imageUrl;
       existing.excerpt ??= row.excerpt;
       existing.commentsUrl ??= row.commentsUrl;
+      existing.siteName ??= row.siteName;
     }
   }
   const rows = [...byHash.values()];
@@ -178,6 +182,7 @@ export async function upsertArticles(
         excerpt: sql`COALESCE(${articles.excerpt}, EXCLUDED.excerpt)`,
         readingMinutes: sql`COALESCE(${articles.readingMinutes}, EXCLUDED.reading_minutes)`,
         commentsUrl: sql`COALESCE(${articles.commentsUrl}, EXCLUDED.comments_url)`,
+        siteName: sql`COALESCE(${articles.siteName}, EXCLUDED.site_name)`,
       },
     });
 
