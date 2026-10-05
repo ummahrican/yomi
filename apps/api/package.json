@@ -23,7 +23,7 @@
     "croner": "^8.1.2",
     "dotenv": "^16.6.1",
     "drizzle-orm": "^0.45.2",
-    "fastify": "^5.8.5",
+    "fastify": "^5.12.5",
     "fastify-type-provider-zod": "^4.0.2",
     "p-limit": "^6.2.0",
     "pg": "^8.21.0",
