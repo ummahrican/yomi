@@ -28,7 +28,7 @@
     "p-limit": "^6.2.0",
     "pg": "^8.21.0",
     "rss-parser": "^3.13.0",
-    "zod": "^3.25.76"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@types/node": "^22.19.21",
