@@ -17,6 +17,9 @@ overrides:
   uuid: "^11.1.0" # via node-notifier; v3/v5/v6 buffer bounds check
   esbuild: "^0.25.10" # dev-server CORS (vite 6 already wants ^0.25.0)
   adm-zip@<0.6.0: ^0.6.0
+  # GHSA-g3hv-75wg-m249 (globparts DoS) affects >=7 <11.0.1. Scoped so wxt's
+  # copy (^10) moves to 11 while multimatch's 3.x copy (not affected) stays put.
+  "minimatch@>=7.0.0 <11.0.1": "^11.0.1"
 
 # pnpm records dependency build-script approval here. We explicitly do NOT run
 # these: esbuild ships prebuilt binaries via its platform-specific optional deps
